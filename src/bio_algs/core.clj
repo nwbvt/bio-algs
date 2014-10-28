@@ -12,3 +12,13 @@
         (let [matches (= (take pat-len rem-text) pat-seq)]
          (recur (if matches (inc pat-count) pat-count) (rest rem-text))))))) 
 
+(defn most-common-kmer
+  "find the most common kmer in the text"
+  [text k]
+  (loop [left text, counts {}]
+    (if (>= (count left) k)
+      (let [part (take k left)
+            new-count (inc (get-in counts [part] 0))]
+        (recur (rest left) (assoc counts part new-count)))
+      (let [max-count (apply max (vals counts))]
+        (for [[p c] counts :when (= c max-count)] (apply str p))))))
