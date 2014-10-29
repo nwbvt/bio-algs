@@ -41,3 +41,21 @@
                  (conj matches loc)
                  matches)
                (inc loc))))))
+
+(defn find-clumps
+  "Find all distinct k-mers forming (L,t)-clumps in the text
+   k is the length of the k-mer, L is the length of text they clump exists in,
+   and t is the amount of times the kmer needs to occur"
+  [text k L t]
+  (loop [left text kmers #{} counts {} drop-end (concat (repeat L nil) text)]
+    (if (< (count left) k) (set (map #(apply str %) kmers))
+      (let [add-kmer (take k left)
+            rem-kmer (take k drop-end)
+            new-counts (assoc 
+                         (assoc counts 
+                                rem-kmer
+                                (dec (get-in counts [rem-kmer] 0)))
+                         add-kmer 
+                         (inc (get-in counts [add-kmer] 0)))
+            meets-crit (= (new-counts add-kmer) t)]
+        (recur (rest left) (if meets-crit (conj kmers add-kmer) kmers) new-counts (rest drop-end))))))

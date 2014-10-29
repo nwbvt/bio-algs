@@ -16,3 +16,9 @@
   (testing "Finding a pattern"
     (is (= [1 3 9]
            (pat-match "ATAT" "GATATATGCATATACTT")))))
+
+(deftest finding-clumps
+  (testing "Finding clumps"
+    (is (= #{"CGACA" "GAAGA"}
+           (find-clumps "CGGACTCGACAGATGTGAAGAACGACAATGTGAAGACTCGACACGACAGAGTGAAGAGAAGAGGAAACATTGTAA"
+                        5 50 4)))))
