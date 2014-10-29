@@ -1,4 +1,5 @@
-(ns bio-algs.core)
+(ns bio-algs.core
+  (:use clojure.java.io))
 
 (defn pattern-count
   "count the number of times the pattern occurs in the text"
@@ -57,3 +58,10 @@
         (recur (rest left) (rest drop-end) 
                (if meets-crit (conj kmers add-kmer) kmers)
                counts)))))
+
+(defn write-result
+  "Writes the solution in the expected format"
+  [values]
+  (with-open [outfile (writer "result.txt")]
+    (binding [*out* outfile]
+      (apply print values))))
