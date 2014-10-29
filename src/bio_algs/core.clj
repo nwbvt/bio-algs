@@ -53,9 +53,7 @@
             rem-kmer (take k drop-end)
             new-counts (assoc 
                          (assoc counts 
-                                rem-kmer
-                                (dec (get-in counts [rem-kmer] 0)))
-                         add-kmer 
-                         (inc (get-in counts [add-kmer] 0)))
-            meets-crit (= (new-counts add-kmer) t)]
+                                rem-kmer (dec (get-in counts [rem-kmer] 0))) ;Remove the kmer moving out of the window
+                         add-kmer (inc (get-in counts [add-kmer] 0)))        ;Add the kmer moving in the window
+            meets-crit (= (new-counts add-kmer) t)]                          ;If the count of the kmer just added is at our threshold 
         (recur (rest left) (if meets-crit (conj kmers add-kmer) kmers) new-counts (rest drop-end))))))
