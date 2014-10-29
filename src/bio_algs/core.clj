@@ -43,6 +43,12 @@
                  matches)
                (inc loc))))))
 
+(defn swap
+  "returns the map passed in with the given function applied to the given key"
+  [m f k & [default]]
+  (let [old (get-in m [k] default)]
+    (assoc m k (f old))))
+
 (defn find-clumps
   "Find all distinct k-mers forming (L,t)-clumps in the text
    k is the length of the k-mer, L is the length of text they clump exists in,
@@ -52,12 +58,12 @@
     (if (< (count left) k) (set (map #(apply str %) kmers))
       (let [add-kmer (take k left)
             rem-kmer (take k drop-end)
-            counts (assoc counts rem-kmer (dec (get-in counts [rem-kmer] 0))) ;Remove the kmer moving out of the window
-            counts (assoc counts add-kmer (inc (get-in counts [add-kmer] 0))) ;Add the kmer moving in the window
-            meets-crit (= (counts add-kmer) t)] ;If the count of the kmer just added is at our threshold 
+            new-counts (-> counts (swap dec rem-kmer 0)  ;Remove the kmer moving out of the window  
+                                  (swap inc add-kmer 0)) ;Add the kmer moving in the window   
+            meets-crit (= (new-counts add-kmer) t)] ;If the count of the kmer just added is at our threshold 
         (recur (rest left) (rest drop-end) 
                (if meets-crit (conj kmers add-kmer) kmers)
-               counts)))))
+               new-counts)))))
 
 (defn write-result
   "Writes the solution in the expected format"
