@@ -48,7 +48,7 @@
    k is the length of the k-mer, L is the length of text they clump exists in,
    and t is the amount of times the kmer needs to occur"
   [text k L t]
-  (loop [left text drop-end (concat (repeat L nil) text) kmers #{} counts {}]
+  (loop [left text drop-end (concat (repeat (inc (- L k)) nil) text) kmers #{} counts {}]
     (if (< (count left) k) (set (map #(apply str %) kmers))
       (let [add-kmer (take k left)
             rem-kmer (take k drop-end)

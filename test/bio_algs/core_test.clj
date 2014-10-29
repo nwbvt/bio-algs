@@ -21,4 +21,7 @@
   (testing "Finding clumps"
     (is (= #{"CGACA" "GAAGA"}
            (find-clumps "CGGACTCGACAGATGTGAAGAACGACAATGTGAAGACTCGACACGACAGAGTGAAGAGAAGAGGAAACATTGTAA"
-                        5 50 4)))))
+                        5 50 4))))
+  (testing "Boundary condition"
+    (is (= #{} (find-clumps "ATCCATC" 3 6 2)))
+    (is (= #{"ATC"} (find-clumps "ATCCATCGA" 3 7 2)))))
