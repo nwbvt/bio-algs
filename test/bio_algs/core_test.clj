@@ -4,5 +4,10 @@
 
 (deftest most-common
   (testing "Most common kmer"
-    (is (= '("CATG" "GCAT")
-           (most-common-kmer "ACGTTGCATGTCGCATGATGCATGAGAGCT" 4)))))
+    (is (= (set ["CATG" "GCAT"])
+           (set (most-common-kmer "ACGTTGCATGTCGCATGATGCATGAGAGCT" 4))))))
+
+(deftest complement
+  (testing "Finding the reverse complement")
+    (is (= "ACCGGGTTTT"
+           (reverse-comp "AAAACCCGGT"))))

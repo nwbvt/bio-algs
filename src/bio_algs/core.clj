@@ -22,3 +22,9 @@
         (recur (rest left) (assoc counts part new-count)))
       (let [max-count (apply max (vals counts))]
         (for [[p c] counts :when (= c max-count)] (apply str p))))))
+
+(defn reverse-comp
+  "find the reverse complement of the given dna string"
+  [dna]
+  (let [comps {\A \T, \T \A, \C \G, \G \C}]
+    (apply str (map comps (reverse dna)))))
