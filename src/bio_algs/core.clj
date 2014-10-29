@@ -28,3 +28,16 @@
   [dna]
   (let [comps {\A \T, \T \A, \C \G, \G \C}]
     (apply str (map comps (reverse dna)))))
+
+(defn pat-match
+  "find an exact pattern match"
+  [pattern text]
+  (let [len (count pattern)]
+    (loop [left text matches [] loc 0]
+      (if (< (count left) len)
+        matches
+        (recur (rest left)
+               (if (= (seq pattern) (take len left))
+                 (conj matches loc)
+                 matches)
+               (inc loc))))))

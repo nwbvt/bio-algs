@@ -11,3 +11,8 @@
   (testing "Finding the reverse complement"
     (is (= "ACCGGGTTTT"
            (reverse-comp "AAAACCCGGT")))))
+
+(deftest pattern-match
+  (testing "Finding a pattern"
+    (is (= [1 3 9]
+           (pat-match "ATAT" "GATATATGCATATACTT")))))
