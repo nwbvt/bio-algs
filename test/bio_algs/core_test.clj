@@ -8,6 +8,6 @@
            (set (most-common-kmer "ACGTTGCATGTCGCATGATGCATGAGAGCT" 4))))))
 
 (deftest complement
-  (testing "Finding the reverse complement")
+  (testing "Finding the reverse complement"
     (is (= "ACCGGGTTTT"
-           (reverse-comp "AAAACCCGGT"))))
+           (reverse-comp "AAAACCCGGT")))))
