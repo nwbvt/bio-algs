@@ -25,3 +25,7 @@
   (testing "Boundary condition"
     (is (= #{} (find-clumps "ATCCATC" 3 6 2)))
     (is (= #{"ATC"} (find-clumps "ATCCATCGA" 3 7 2)))))
+
+(deftest hamming-distance
+  (testing "Finding the hamming distance"
+    (is (= 3 (hamming-dist "GGGCCGTTGGT" "GGACCGTTGAC")))))

@@ -65,6 +65,12 @@
                (if meets-crit (conj kmers add-kmer) kmers)
                new-counts)))))
 
+(defn hamming-dist
+  "returns the hamming distance between two sequences"
+  [& seqs]
+  (let [len (count seqs)]
+    (count (filter #(not (apply = %)) (partition len (apply interleave seqs))))))
+
 (defn write-result
   "Writes the solution in the expected format"
   [values]
