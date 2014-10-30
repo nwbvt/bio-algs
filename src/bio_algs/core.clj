@@ -65,6 +65,34 @@
                (if meets-crit (conj kmers add-kmer) kmers)
                new-counts)))))
 
+
+(let [skew-map {\A 0, \T 0, \C -1, \G 1}]
+  (defn skew
+    "Returns the skew (difference between the count of gs and cs) of the dna sequence"
+    [dna]
+    (loop [rem-dna dna, skews [0]]
+      (if (empty? rem-dna) skews
+        (recur (rest rem-dna) (conj skews (+ (last skews) (skew-map (first rem-dna))))))))
+
+  (defn min-skew
+  "Returns the indices where the skew hits a minimum"
+  [dna]
+  (loop [rem-dna dna
+         min-val 0
+         min-index []
+         cur-val 0
+         cur-index 0]
+    (if (empty? rem-dna) min-index
+      (let [new-val (+ cur-val (skew-map (first rem-dna)))
+            min-diff (- min-val cur-val)]
+       (recur (rest rem-dna)
+              (if (pos? min-diff) cur-val min-val)
+              (if (pos? min-diff) [cur-index] (if (zero? min-diff) (conj min-index cur-index) min-index))
+              new-val
+              (inc cur-index)))))))
+
+
+
 (defn write-result
   "Writes the solution in the expected format"
   [values]

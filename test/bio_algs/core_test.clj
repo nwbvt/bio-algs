@@ -25,3 +25,13 @@
   (testing "Boundary condition"
     (is (= #{} (find-clumps "ATCCATC" 3 6 2)))
     (is (= #{"ATC"} (find-clumps "ATCCATCGA" 3 7 2)))))
+
+(deftest skew-counts
+  (testing "Skew counts"
+    (is (= [0 -1 -1 -1 0 1 2 1 1 1 0 1 2 1 0 0 0 0 -1 0 -1 -2]
+          (skew "CATGGGCATCGGCCATACGCC")))))
+
+(deftest minimum-skew
+  (testing "Finding the minimum skew positions"
+    (is (= [11 24]
+           (min-skew "TAAAGACTGCCGAGAGGCCAACACGAGTGCTAGAACGAGGGGCGTAAACGCGGGTCCGAT")))))
