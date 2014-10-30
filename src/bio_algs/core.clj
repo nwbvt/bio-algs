@@ -65,7 +65,6 @@
                (if meets-crit (conj kmers add-kmer) kmers)
                new-counts)))))
 
-
 (let [skew-map {\A 0, \T 0, \C -1, \G 1}]
   (defn skew
     "Returns the skew (difference between the count of gs and cs) of the dna sequence"
@@ -92,6 +91,11 @@
               (inc cur-index)))))))
 
 
+(defn hamming-dist
+  "returns the hamming distance between two sequences"
+  [& seqs]
+  (let [len (count seqs)]
+    (count (filter #(not (apply = %)) (partition len (apply interleave seqs))))))
 
 (defn write-result
   "Writes the solution in the expected format"

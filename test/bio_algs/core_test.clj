@@ -35,3 +35,7 @@
   (testing "Finding the minimum skew positions"
     (is (= [11 24]
            (min-skew "TAAAGACTGCCGAGAGGCCAACACGAGTGCTAGAACGAGGGGCGTAAACGCGGGTCCGAT")))))
+
+(deftest hamming-distance
+  (testing "Finding the hamming distance"
+    (is (= 3 (hamming-dist "GGGCCGTTGGT" "GGACCGTTGAC")))))
