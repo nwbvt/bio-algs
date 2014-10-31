@@ -19,6 +19,12 @@
   (let [old (get-in m [k] default)]
     (assoc m k (f old))))
 
+(defn reverse-comp
+  "find the reverse complement of the given dna string"
+  [dna]
+  (let [comps {\A \T, \T \A, \C \G, \G \C}]
+    (apply str (map comps (reverse dna)))))
+
 (defn- mutate
   "returns the single letter mutations of a given dna sequence"
   [dna]
@@ -28,12 +34,15 @@
         (for [i (range (count dna))]
           (map #(assoc dna-v i %) [\A \T \C \G])))))))
 
-(defn- varients
+(defn varients
   "returns the varients of the DNA sequence that are witing the given hamming distance"
-  [dna d]
-  (loop [vars #{dna} left d]
-    (if (zero? left) vars
-      (recur (set (apply union (conj (map mutate vars) vars))) (dec left)))))
+  [dna d include-reverse?]
+  (let [mutations
+    (loop [vars #{dna} left d]
+      (if (zero? left) vars
+        (recur (set (apply union (conj (map mutate vars) vars))) (dec left))))]
+    (if include-reverse? (union mutations (set (map reverse-comp mutations)))
+      mutations)))
 
 (defn- upcounts
   "updates the count for each dna sequence by 1"
@@ -44,21 +53,16 @@
 
 (defn most-common-kmer
   "find the most common kmer in the text, optionally including a minimum hamming distance for approx matches"
-  ([text k] (most-common-kmer text k 0))
-  ([text k d]
+  ([text k] (most-common-kmer text k 0 false))
+  ([text k d] (most-common-kmer text k d false))
+  ([text k d include-reverse?]
   (loop [left text, counts {}]
     (if (>= (count left) k)
       (let [part (take k left)
-            new-counts (upcounts counts (varients part d))]
+            new-counts (upcounts counts (varients part d include-reverse?))]
         (recur (rest left) new-counts))
       (let [max-count (apply max (vals counts))]
         (for [[p c] counts :when (= c max-count)] (apply str p)))))))
-
-(defn reverse-comp
-  "find the reverse complement of the given dna string"
-  [dna]
-  (let [comps {\A \T, \T \A, \C \G, \G \C}]
-    (apply str (map comps (reverse dna)))))
 
 (defn pat-match
   "find an exact pattern match"

@@ -8,7 +8,10 @@
            (set (most-common-kmer "ACGTTGCATGTCGCATGATGCATGAGAGCT" 4)))))
   (testing "Most common with mismatches"
     (is (= #{"GATG" "ATGC" "ATGT"}
-           (set (most-common-kmer "ACGTTGCATGTCGCATGATGCATGAGAGCT" 4 1))))))
+           (set (most-common-kmer "ACGTTGCATGTCGCATGATGCATGAGAGCT" 4 1)))))
+  (testing "Most common with mismatches and reverse complements"
+    (is (= #{"ATGT" "ACAT"}
+           (set (most-common-kmer "ACGTTGCATGTCGCATGATGCATGAGAGCT" 4 1 true))))))
 
 (deftest complement
   (testing "Finding the reverse complement"
