@@ -1,5 +1,5 @@
 (ns bio-algs.core
-  (:use clojure.java.io))
+  (:use clojure.java.io clojure.set))
 
 (defn pattern-count
   "count the number of times the pattern occurs in the text"
@@ -13,16 +13,46 @@
         (let [matches (= (take pat-len rem-text) pat-seq)]
          (recur (if matches (inc pat-count) pat-count) (rest rem-text))))))) 
 
+(defn swap
+  "returns the map passed in with the given function applied to the given key"
+  [m f k & [default]]
+  (let [old (get-in m [k] default)]
+    (assoc m k (f old))))
+
+(defn- mutate
+  "returns the single letter mutations of a given dna sequence"
+  [dna]
+  (let [dna-v (apply vector dna)]
+    (map #(apply str %)
+      (set (apply concat
+        (for [i (range (count dna))]
+          (map #(assoc dna-v i %) [\A \T \C \G])))))))
+
+(defn- varients
+  "returns the varients of the DNA sequence that are witing the given hamming distance"
+  [dna d]
+  (loop [vars #{dna} left d]
+    (if (zero? left) vars
+      (recur (set (apply union (conj (map mutate vars) vars))) (dec left)))))
+
+(defn- upcounts
+  "updates the count for each dna sequence by 1"
+  [counts dna]
+  (loop [new-counts counts rem-dna dna]
+    (if (empty? rem-dna) new-counts
+      (recur (swap new-counts inc (first rem-dna) 0) (rest rem-dna)))))
+
 (defn most-common-kmer
-  "find the most common kmer in the text"
-  [text k]
+  "find the most common kmer in the text, optionally including a minimum hamming distance for approx matches"
+  ([text k] (most-common-kmer text k 0))
+  ([text k d]
   (loop [left text, counts {}]
     (if (>= (count left) k)
       (let [part (take k left)
-            new-count (inc (get-in counts [part] 0))]
-        (recur (rest left) (assoc counts part new-count)))
+            new-counts (upcounts counts (varients part d))]
+        (recur (rest left) new-counts))
       (let [max-count (apply max (vals counts))]
-        (for [[p c] counts :when (= c max-count)] (apply str p))))))
+        (for [[p c] counts :when (= c max-count)] (apply str p)))))))
 
 (defn reverse-comp
   "find the reverse complement of the given dna string"
@@ -42,12 +72,6 @@
                  (conj matches loc)
                  matches)
                (inc loc))))))
-
-(defn swap
-  "returns the map passed in with the given function applied to the given key"
-  [m f k & [default]]
-  (let [old (get-in m [k] default)]
-    (assoc m k (f old))))
 
 (defn find-clumps
   "Find all distinct k-mers forming (L,t)-clumps in the text
