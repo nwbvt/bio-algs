@@ -13,7 +13,7 @@
     (is (= #{"ATGT" "ACAT"}
            (set (most-common-kmer "ACGTTGCATGTCGCATGATGCATGAGAGCT" 4 1 true))))))
 
-(deftest complement
+(deftest rev-complement
   (testing "Finding the reverse complement"
     (is (= "ACCGGGTTTT"
            (reverse-comp "AAAACCCGGT")))))
