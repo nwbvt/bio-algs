@@ -34,35 +34,27 @@
         (for [i (range (count dna))]
           (map #(assoc dna-v i %) [\A \T \C \G])))))))
 
-(defn varients
+(defn- varients
   "returns the varients of the DNA sequence that are witing the given hamming distance"
   [dna d include-reverse?]
   (let [mutations
     (loop [vars #{dna} left d]
       (if (zero? left) vars
         (recur (set (apply union (conj (map mutate vars) vars))) (dec left))))]
-    (if include-reverse? (union mutations (set (map reverse-comp mutations)))
+    (if include-reverse? (concat mutations (map reverse-comp mutations))
       mutations)))
-
-(defn- upcounts
-  "updates the count for each dna sequence by 1"
-  [counts dna]
-  (loop [new-counts counts rem-dna dna]
-    (if (empty? rem-dna) new-counts
-      (recur (swap new-counts inc (first rem-dna) 0) (rest rem-dna)))))
 
 (defn most-common-kmer
   "find the most common kmer in the text, optionally including a minimum hamming distance for approx matches"
   ([text k] (most-common-kmer text k 0 false))
   ([text k d] (most-common-kmer text k d false))
   ([text k d include-reverse?]
-  (loop [left text, counts {}]
-    (if (>= (count left) k)
-      (let [part (take k left)
-            new-counts (upcounts counts (varients part d include-reverse?))]
-        (recur (rest left) new-counts))
-      (let [max-count (apply max (vals counts))]
-        (for [[p c] counts :when (= c max-count)] (apply str p)))))))
+   (let [varient-parts (apply concat (for [left (iterate rest text) :let [part (apply str (take k left))] 
+                                           :while (>= (count left) k)]
+                                       (varients part d include-reverse?)))
+         counts (frequencies varient-parts)
+         max-count (apply max (vals counts))]
+     (for [[p c] counts :when (= c max-count)] p))))
 
 (defn pat-match
   "find an exact pattern match"
