@@ -1,4 +1,4 @@
-(ns bio-algs.core
+(ns bio-algs.ori-rep
   (:use clojure.java.io clojure.set))
 
 (defn pattern-count

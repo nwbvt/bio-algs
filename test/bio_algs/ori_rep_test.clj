@@ -1,6 +1,6 @@
-(ns bio-algs.core-test
+(ns bio-algs.ori-rep-test
   (:require [clojure.test :refer :all]
-            [bio-algs.core :refer :all]))
+            [bio-algs.ori-rep :refer :all]))
 
 (deftest most-common
   (testing "Most common kmer"
