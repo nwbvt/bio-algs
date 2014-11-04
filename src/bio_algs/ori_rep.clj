@@ -116,10 +116,3 @@
   [& seqs]
   (let [len (count seqs)]
     (count (filter #(not (apply = %)) (partition len (apply interleave seqs))))))
-
-(defn write-result
-  "Writes the solution in the expected format"
-  [values]
-  (with-open [outfile (writer "result.txt")]
-    (binding [*out* outfile]
-      (apply print values))))
