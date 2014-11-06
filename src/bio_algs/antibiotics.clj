@@ -7,6 +7,11 @@
         key-vals (map #(split % #" ") (split text #"\n"))]
     (zipmap (map first key-vals) (map second key-vals))))
 
+(def mass-table
+  (let [text (slurp "resources/integer_mass_table.txt")
+        key-vals (map #(split % #" ") (split text #"\n"))]
+    (zipmap (map first key-vals) (map #(Integer/parseInt (second %)) key-vals))))
+
 (defn translate
   "Translate a dna string into the cooresponding amino acid string"
   [dna]
@@ -33,3 +38,17 @@
               matches (or (= peptide forward-pep)
                           (= peptide reverse-pep))]
           (recur (rest dna) (if matches (conj results dna-part) results)))))))
+
+(defn weight
+  "find the weight of a peptide"
+  [peptide]
+  (apply + (map #(mass-table (str %)) peptide)))
+
+(defn theoretical-spectrum
+  "Finds the theoretical spectrum of a peptide"
+  [peptide]
+  (let [pep-len (count peptide)
+        pep-cycle (cycle peptide)]
+    (sort (conj (for [i (range pep-len) j (range 1 pep-len)
+                      :let [sub-pep (->> pep-cycle (drop i) (take j))]]
+                  (weight sub-pep)) 0 (weight peptide)))))

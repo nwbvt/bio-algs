@@ -11,3 +11,8 @@
   (testing "Finding encodings for a peptide"
     (is (= ["ATGGCC" "GGCCAT" "ATGGCC"]
            (find-encoding "ATGGCCATGGCCCCCAGAACTGAGATCAATAGTACCCGTATTAACGGGTGA" "MA")))))
+
+(deftest theoretical-spectrum-test
+  (testing "Finding the theoretical spectrum for a peptide"
+    (is (= [0 113 114 128 129 227 242 242 257 355 356 370 371 484]
+           (theoretical-spectrum "LEQN")))))
