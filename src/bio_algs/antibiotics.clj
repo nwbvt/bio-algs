@@ -1,6 +1,7 @@
 (ns bio-algs.antibiotics
   (:require [clojure.string :refer [split]]
-            [bio-algs.ori-rep :refer [reverse-comp]]))
+            [bio-algs.ori-rep :refer [reverse-comp]]
+            [clojure.math.numeric-tower :refer :all]))
 
 (def rna-codon-table
   (let [text (slurp "resources/RNA_codon_table_1.txt")
@@ -52,3 +53,9 @@
     (sort (conj (for [i (range pep-len) j (range 1 pep-len)
                       :let [sub-pep (->> pep-cycle (drop i) (take j))]]
                   (weight sub-pep)) 0 (weight peptide)))))
+
+(defn sub-linear
+  "counts the number of linear subpeptides for a peptide of length n
+   which is basically 1 (for the empty one) + the sum of integers 1-n"
+  [n]
+  (inc (* n (ceil (/ n 2)))))
