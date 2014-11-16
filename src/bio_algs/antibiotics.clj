@@ -83,3 +83,15 @@
   "Give the bb-seq in the format expected"
   [weights]
   (map format-weight-seqs (map first (bb-seq weights))))
+
+
+(defn score
+  "Scores a spectrum against the theoretical spectrum of a given peptide"
+  [peptide spectrum]
+  (loop [t-spec (theoretical-spectrum peptide)
+         e-spec (vec spectrum)
+         c-score 0]
+    (if (empty? t-spec) c-score
+      (let [w (first t-spec) i (.indexOf e-spec w)]
+        (if (= -1 i) (recur (rest t-spec) e-spec c-score)
+          (recur (rest t-spec) (assoc e-spec i nil) (inc c-score)))))))

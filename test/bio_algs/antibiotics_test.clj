@@ -20,6 +20,9 @@
 (deftest branch-and-bounds-test
   (testing "Using branch and bounds to perform sequencing"
     (is (= ["186-128-113" "186-113-128" "128-186-113" "128-113-186" "113-186-128" "113-128-186" ]
-          (format-bb-seq [0 113 128 186 241 299 314 427]) ))
-    )
-  )
+          (format-bb-seq [0 113 128 186 241 299 314 427]) ))))
+
+
+(deftest cyclopeptide-scoring-test
+  (testing "Scoring a peptide's experimental spectrum"
+    (is (= 11 (score "NQEL" [0 99 113 114 128 227 257 299 355 356 370 371 484])))))
