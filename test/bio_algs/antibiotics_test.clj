@@ -16,3 +16,10 @@
   (testing "Finding the theoretical spectrum for a peptide"
     (is (= [0 113 114 128 129 227 242 242 257 355 356 370 371 484]
            (theoretical-spectrum "LEQN")))))
+
+(deftest branch-and-bounds-test
+  (testing "Using branch and bounds to perform sequencing"
+    (is (= ["186-128-113" "186-113-128" "128-186-113" "128-113-186" "113-186-128" "113-128-186" ]
+          (format-bb-seq [0 113 128 186 241 299 314 427]) ))
+    )
+  )

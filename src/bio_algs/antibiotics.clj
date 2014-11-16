@@ -1,5 +1,5 @@
 (ns bio-algs.antibiotics
-  (:require [clojure.string :refer [split]]
+  (:require [clojure.string :refer [split join]]
             [bio-algs.ori-rep :refer [reverse-comp]]
             [clojure.math.numeric-tower :refer :all]))
 
@@ -43,7 +43,8 @@
 (defn weight
   "find the weight of a peptide"
   [peptide]
-  (apply + (map #(mass-table (str %)) peptide)))
+  (apply + (map #(if (number? %) %
+                   (mass-table (str %))) peptide)))
 
 (defn theoretical-spectrum
   "Finds the theoretical spectrum of a peptide"
@@ -59,3 +60,26 @@
    which is basically 1 (for the empty one) + the sum of integers 1-n"
   [n]
   (inc (* n (ceil (/ n 2)))))
+
+(defn bb-seq
+  "Uses branch and bounds to find peptide sequences consistent with a spectrum"
+  [weights]
+  (let [aa-weights (filter (set weights) (set (vals mass-table)))
+        weight-set (set weights) ]
+    (loop [peptides [[[], 0]] valid []]  ;first value is the sequence (in weights), second the total
+      (let [branched (for [[pep-s pep-w] peptides, aa-w aa-weights]
+                       [(conj pep-s aa-w) (+ pep-w aa-w) ])
+            bounded (filter #(weight-set (second %)) branched)
+            valid (concat valid (filter #(= weight-set (set (theoretical-spectrum (first %)))) peptides))]
+        (if (empty? bounded) valid
+          (recur bounded valid))))))
+
+(defn format-weight-seqs
+  "Output the a sequence of weights as a string"
+  [weight-seq]
+  (join "-" weight-seq))
+
+(defn format-bb-seq
+  "Give the bb-seq in the format expected"
+  [weights]
+  (map format-weight-seqs (map first (bb-seq weights))))
