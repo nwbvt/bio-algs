@@ -109,8 +109,9 @@
 
 (defn lb-sequence
   "Uses the leaderboard algorithm to find the peptide sequence"
-  [n weights]
-  (let [aa-weights (set (vals mass-table))
+  ([n weights] (lb-sequence n weights (vals mass-table)))
+  ([n weights aas]
+  (let [aa-weights (set aas)
         parent-mass (apply max weights)
         weight-freqs (frequencies weights)
         mk-entry (fn [pep] {:pep pep :mass (apply + pep) :score (score pep weight-freqs true)})]
@@ -122,7 +123,7 @@
             left (filter #(> parent-mass (:mass %)) branched) ]
         (if (empty? left) (:pep best-potential)
           (let [best-left (take n (reverse (sort-by :score left)))] 
-            (recur (map :pep best-left) best-potential)))))))
+            (recur (map :pep best-left) best-potential))))))))
 
 
 (defn convolution
@@ -133,3 +134,17 @@
     (for [i (range spec-count) j (range (inc i) spec-count)
           :let [ith (sorted i) jth (sorted j)] :when (not (= ith jth))]
       (- jth ith))))
+
+(defn best-convolutions
+  "Gets the most frequent m convolutions"
+  [m spectrum]
+  (let [convolutions (convolution spectrum)
+        freqs (frequencies convolutions)
+        sorted (reverse (sort-by second freqs))]
+        (map first (take m sorted))) )
+
+(defn convolution-seq
+  "Uses the most frequent convolution masses as the basis for a leaderboard sequence"
+  [m n spectrum]
+  (let [best (best-convolutions m spectrum)]
+    (lb-sequence n spectrum best)))

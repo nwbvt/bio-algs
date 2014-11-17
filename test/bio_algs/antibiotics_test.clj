@@ -41,3 +41,9 @@
   (testing "Testing the convolution of a spectrum"
     (is (= (sort [137 137 186 186 323 49])
            (sort (convolution [0 137 186 323]))))))
+
+(deftest convolution-sequencing-test
+  (testing "Testing using convolutions to sequence"
+    (let [weights [57 57 71 99 129 137 170 186 194 208 228 265 285 299 307 323 356 364 394 422 493]]
+      (is (= (score [99 71 137 57 72 57] weights))
+          (score (convolution-seq 20 60 weights) weights)))))
