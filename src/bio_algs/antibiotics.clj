@@ -98,19 +98,22 @@
   ([peptide spectrum] (score peptide spectrum false))
   ([peptide spectrum linear?]
   (loop [t-spec (theoretical-spectrum peptide linear?)
-         e-spec (vec spectrum)
+         e-spec (if (map? spectrum) spectrum ; if it is already in the form of the frequency map
+                  (frequencies spectrum))
          c-score 0]
     (if (empty? t-spec) c-score
-      (let [w (first t-spec) i (.indexOf e-spec w)]
-        (if (= -1 i) (recur (rest t-spec) e-spec c-score)
-          (recur (rest t-spec) (assoc e-spec i nil) (inc c-score))))))))
+      (let [w (first t-spec) i (e-spec w)]
+        (if i (recur (rest t-spec) (assoc e-spec w (dec i)) (inc c-score)) 
+          (recur (rest t-spec) e-spec c-score)))))))
+
 
 (defn lb-sequence
   "Uses the leaderboard algorithm to find the peptide sequence"
   [n weights]
   (let [aa-weights (set (vals mass-table))
         parent-mass (apply max weights)
-        mk-entry (fn [pep] {:pep pep :mass (apply + pep) :score (score pep weights true)})]
+        weight-freqs (frequencies weights)
+        mk-entry (fn [pep] {:pep pep :mass (apply + pep) :score (score pep weight-freqs true)})]
     (loop [peptides [[]] leader (mk-entry [])]
       (let [branched (for [pep peptides, aa aa-weights :let [new-pep (conj pep aa)]]
                        (mk-entry new-pep))
