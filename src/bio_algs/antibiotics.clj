@@ -106,6 +106,15 @@
         (if (and (not (nil? i)) (not (zero? i))) (recur (rest t-spec) (assoc e-spec w (dec i)) (inc c-score)) 
           (recur (rest t-spec) e-spec c-score)))))))
 
+(defn trim
+  "trims the leaderboard"
+  [leaderboard n]
+  (let [sorted (reverse (sort-by :score leaderboard))
+        best (take n sorted)
+        remain (drop n sorted)
+        worst-allowed (:score (last best))
+        tied (take-while #(= worst-allowed (:score %)) remain)]
+    (concat best tied)))
 
 (defn lb-sequence
   "Uses the leaderboard algorithm to find the peptide sequence"
@@ -122,7 +131,7 @@
             best-potential (first (reverse (sort-by :score (conj potential leader))))
             left (filter #(> parent-mass (:mass %)) branched) ]
         (if (empty? left) (:pep best-potential)
-          (let [best-left (take n (reverse (sort-by :score left)))] 
+          (let [best-left (trim left n)]
             (recur (map :pep best-left) best-potential))))))))
 
 
