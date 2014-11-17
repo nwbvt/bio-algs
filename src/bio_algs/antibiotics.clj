@@ -103,7 +103,7 @@
          c-score 0]
     (if (empty? t-spec) c-score
       (let [w (first t-spec) i (e-spec w)]
-        (if i (recur (rest t-spec) (assoc e-spec w (dec i)) (inc c-score)) 
+        (if (and (not (nil? i)) (not (zero? i))) (recur (rest t-spec) (assoc e-spec w (dec i)) (inc c-score)) 
           (recur (rest t-spec) e-spec c-score)))))))
 
 
