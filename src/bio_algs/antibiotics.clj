@@ -52,3 +52,16 @@
     (sort (conj (for [i (range pep-len) j (range 1 pep-len)
                       :let [sub-pep (->> pep-cycle (drop i) (take j))]]
                   (weight sub-pep)) 0 (weight peptide)))))
+
+(defn count-peptides
+  "counts the number of peptides with a given mass
+   basically the knapsack problem, so don't expect this to be fast"
+  [weight]
+  (let [i-weights (set (vals mass-table))]
+    (loop [current-count 0, pieces [0]]
+      (let [new-pieces (for [i i-weights, p pieces] (+ i p))
+            matching (filter #(= weight %) new-pieces)
+            smaller (filter #(> weight %) new-pieces)
+            new-count (+ current-count (count matching))]
+        (if (empty? smaller) new-count
+          (recur new-count smaller))))))

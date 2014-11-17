@@ -16,3 +16,7 @@
   (testing "Finding the theoretical spectrum for a peptide"
     (is (= [0 113 114 128 129 227 242 242 257 355 356 370 371 484]
            (theoretical-spectrum "LEQN")))))
+
+(deftest count-peptides-test
+  (testing "Counting the number of peptides for a given weight"
+    (is (= 3 (count-peptides 128)))))
