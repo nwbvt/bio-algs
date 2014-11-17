@@ -50,13 +50,19 @@
   "Finds the theoretical spectrum of a peptide"
   ([peptide] (theoretical-spectrum peptide false))
   ([peptide linear?]
-  (let [pep-len (count peptide)
-        pep-cycle (cycle peptide)]
-    (conj (for [i (range pep-len) j (range 1 pep-len)
-                :let [sub-pep (->> pep-cycle (drop i) (take j))]
-                :when (or (not linear?) (>= pep-len (+ i j)))]
-            (weight sub-pep)) 0 (weight peptide)))))
-
+  (sort
+    (let [pep-len (count peptide)
+          premasses (loop [prev 0 masses [0] peps peptide]
+                      (if (empty? peps) masses
+                        (let [next-weight (+ prev (weight [(first peps)]))]
+                          (recur next-weight (conj masses next-weight) (rest peps)))))]
+      (concat
+        [0]
+        (for [i (range pep-len) j (range i pep-len)]
+          (- (premasses (inc j)) (premasses i)))
+        (if linear? []
+          (for [i (range 1 pep-len) j (range i (dec pep-len))]
+            (- (premasses pep-len) (- (premasses (inc j)) (premasses i))))))))))
 
 (defn sub-linear
   "counts the number of linear subpeptides for a peptide of length n

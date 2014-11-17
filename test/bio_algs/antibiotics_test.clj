@@ -15,7 +15,9 @@
 (deftest theoretical-spectrum-test
   (testing "Finding the theoretical spectrum for a peptide"
     (is (= [0 113 114 128 129 227 242 242 257 355 356 370 371 484]
-           (theoretical-spectrum "LEQN")))))
+           (theoretical-spectrum "LEQN")))
+    (is (= [0 113 114 128 129 242 242 257 370 371 484]
+           (theoretical-spectrum "NQEL" true)))))
 
 (deftest branch-and-bounds-test
   (testing "Using branch and bounds to perform sequencing"
