@@ -36,3 +36,8 @@
     (let [weights [0 71 113 129 147 200 218 260 313 331 347 389 460]]
      (is (= (score [113 147 71 129] weights)
            (score (lb-sequence 10 weights) weights))))))
+
+(deftest convolution-test
+  (testing "Testing the convolution of a spectrum"
+    (is (= (sort [137 137 186 186 323 49])
+           (sort (convolution [0 137 186 323]))))))

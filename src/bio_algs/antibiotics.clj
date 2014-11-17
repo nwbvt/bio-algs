@@ -24,7 +24,7 @@
 
 (defn count-options
   "Counts the number of dna strings that will translate to a given amino acid sequence"
-  [& aaseq]
+  [aaseq]
   (apply * (map (frequencies (vals rna-codon-table)) aaseq)))
 
 (defn find-encoding
@@ -123,3 +123,13 @@
         (if (empty? left) (:pep best-potential)
           (let [best-left (take n (reverse (sort-by :score left)))] 
             (recur (map :pep best-left) best-potential)))))))
+
+
+(defn convolution
+  "Computes the convolution of the spectrum"
+  [spectrum]
+  (let [sorted (vec (sort spectrum))
+        spec-count (count spectrum) ]
+    (for [i (range spec-count) j (range (inc i) spec-count)
+          :let [ith (sorted i) jth (sorted j)] :when (not (= ith jth))]
+      (- jth ith))))
