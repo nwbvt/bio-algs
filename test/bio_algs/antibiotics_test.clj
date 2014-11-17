@@ -25,4 +25,12 @@
 
 (deftest cyclopeptide-scoring-test
   (testing "Scoring a peptide's experimental spectrum"
-    (is (= 11 (score "NQEL" [0 99 113 114 128 227 257 299 355 356 370 371 484])))))
+    (is (= 11 (score "NQEL" [0 99 113 114 128 227 257 299 355 356 370 371 484])))
+    (is (== 8 (score "NQEL" [0 99 113 114 128 227 257 299 355 356 370 371 484] true)))
+    ))
+
+(deftest leaderboard-sequencing
+  (testing "Sequencing via the leaderboard algorithm"
+    (let [weights [0 71 113 129 147 200 218 260 313 331 347 389 460]]
+     (is (= (score [113 147 71 129] weights)
+           (score (lb-sequence 10 weights) weights))))))

@@ -48,12 +48,15 @@
 
 (defn theoretical-spectrum
   "Finds the theoretical spectrum of a peptide"
-  [peptide]
+  ([peptide] (theoretical-spectrum peptide false))
+  ([peptide linear?]
   (let [pep-len (count peptide)
         pep-cycle (cycle peptide)]
-    (sort (conj (for [i (range pep-len) j (range 1 pep-len)
-                      :let [sub-pep (->> pep-cycle (drop i) (take j))]]
-                  (weight sub-pep)) 0 (weight peptide)))))
+    (conj (for [i (range pep-len) j (range 1 pep-len)
+                :let [sub-pep (->> pep-cycle (drop i) (take j))]
+                :when (or (not linear?) (>= pep-len (+ i j)))]
+            (weight sub-pep)) 0 (weight peptide)))))
+
 
 (defn sub-linear
   "counts the number of linear subpeptides for a peptide of length n
@@ -84,14 +87,30 @@
   [weights]
   (map format-weight-seqs (map first (bb-seq weights))))
 
-
 (defn score
   "Scores a spectrum against the theoretical spectrum of a given peptide"
-  [peptide spectrum]
-  (loop [t-spec (theoretical-spectrum peptide)
+  ([peptide spectrum] (score peptide spectrum false))
+  ([peptide spectrum linear?]
+  (loop [t-spec (theoretical-spectrum peptide linear?)
          e-spec (vec spectrum)
          c-score 0]
     (if (empty? t-spec) c-score
       (let [w (first t-spec) i (.indexOf e-spec w)]
         (if (= -1 i) (recur (rest t-spec) e-spec c-score)
-          (recur (rest t-spec) (assoc e-spec i nil) (inc c-score)))))))
+          (recur (rest t-spec) (assoc e-spec i nil) (inc c-score))))))))
+
+(defn lb-sequence
+  "Uses the leaderboard algorithm to find the peptide sequence"
+  [n weights]
+  (let [aa-weights (set (vals mass-table))
+        parent-mass (apply max weights)
+        mk-entry (fn [pep] {:pep pep :mass (apply + pep) :score (score pep weights true)})]
+    (loop [peptides [[]] leader (mk-entry [])]
+      (let [branched (for [pep peptides, aa aa-weights :let [new-pep (conj pep aa)]]
+                       (mk-entry new-pep))
+            potential (filter #(= parent-mass (:mass %)) branched)
+            best-potential (first (reverse (sort-by :score (conj potential leader))))
+            left (filter #(> parent-mass (:mass %)) branched) ]
+        (if (empty? left) (:pep best-potential)
+          (let [best-left (take n (reverse (sort-by :score left)))] 
+            (recur (map :pep best-left) best-potential)))))))
