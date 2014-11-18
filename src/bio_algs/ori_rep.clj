@@ -34,7 +34,7 @@
         (for [i (range (count dna))]
           (map #(assoc dna-v i %) [\A \T \C \G])))))))
 
-(defn- varients
+(defn varients
   "returns the varients of the DNA sequence that are witing the given hamming distance"
   [dna d include-reverse?]
   (let [mutations
