@@ -4,5 +4,5 @@
 
 (deftest motif-finding
   (testing "motif enumeration"
-    (is (= ["ATA" "ATT" "GTT" "TTT"]
-           (motif-enum {"ATTTGGC" "TGCCTTA" "CGGTATC" "GAAAATT"} 3 1))))) 
+    (is (= #{"ATA" "ATT" "GTT" "TTT"}
+           (motif-enum [ "ATTTGGC" "TGCCTTA" "CGGTATC" "GAAAATT" ] 3 1))))) 
