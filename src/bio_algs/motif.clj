@@ -27,3 +27,23 @@
             pattern' (varients pattern d false)
             :when (every? (partial matches-with-d-mismatches? pattern' d) dna-to-compare)]
         pattern'))))
+
+(defn log
+  [n base]
+  (/ (Math/log n) (Math/log base)))
+
+(defn entropy
+  [col]
+  (* -1 (apply +
+               (for [aa [\A \T \C \G]
+                     :let [t (count (filter #(= aa %) col))
+                           p (/ t (count col))]]
+                 (if (zero? t) 0 (* p (log p 2)))))))
+
+(defn motif-entropy
+  "finds the entropy of the given motif"
+  [& motifs]
+  (let [len (count (first motifs))]
+    (apply +
+           (for [i (range len) :let [col (map #(nth % i) motifs)]]
+             (entropy col)))))
