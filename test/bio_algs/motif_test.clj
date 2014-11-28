@@ -16,3 +16,18 @@
   (testing "calculating motif entropies"
     (let [e (motif-entropy "ATCA" "ATGA" "ATTA" "ATAT")]
       (is (and (< 2.811 e) (> 2.812 e))))))
+
+(deftest medians
+  (testing "distance function"
+    (is (= 5 (dist "AAA" ["TTACCTTAAC"
+                          "GATATCTGTC"
+                          "ACGGCGTTCG"
+                          "CCCTAAAGAG"
+                          "CGTCAGAGGT" ])))
+    )
+  (testing "median string"
+    (is (= "GAC" (median-string 3 ["AAATTGACGCAT"
+                                   "GACGACCACGTT"
+                                   "CGTCAGCGCCTG"
+                                   "GCTGAGCACCGG"
+                                   "AGTACGGGACAG"])))))

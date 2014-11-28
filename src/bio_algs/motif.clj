@@ -1,5 +1,6 @@
 (ns bio-algs.motif
-  (:require [bio-algs.ori-rep :refer [varients]]))
+  (:require [bio-algs.ori-rep :refer [varients hamming-dist]]
+            [clojure.set :refer :all]))
 
 (defn matches?
   "Returns true iff the dna contains the pattern"
@@ -47,3 +48,19 @@
     (apply +
            (for [i (range len) :let [col (map #(nth % i) motifs)]]
              (entropy col)))))
+
+(defn dist
+  "Finds the distance between a pattern and one or more strings of dna"
+  [pattern dna]
+  (if (string? dna)
+    (apply min (map (partial hamming-dist pattern) (all-kmers (count pattern) dna)))
+    (apply + (map (partial dist pattern) dna))))           ;Sum the dists from each dna string 
+
+(defn median-string
+  "Finds the median kmer in the given set of dna
+   A median kmer is defined as the one that minimizes the distance between it an all dna strings"
+  [k dna]
+  (let [kmers (apply union (map (partial all-kmers k) dna))]
+    (println kmers)
+    (println (map #(dist % dna) kmers))
+    (apply min-key #(dist % dna) kmers)))
