@@ -86,7 +86,25 @@
                                                "GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG"
                                                "TAGTACCGAGACCGAAAGAAGTATACAGGCGT"
                                                "TAGATCAAGTTTCAGGTGCACGTCGGTGAACC"
-                                               "AATCCACCAGCTCCACGTGCAATGTTGGCCTA"] 100))))))
+                                               "AATCCACCAGCTCCACGTGCAATGTTGGCCTA"] 200)))))
+  (testing "probability from a profile"
+    (is (= (* 0.8 0.2 0.8 0.2)
+           (prob-from-profile
+             {\A [0.8 0.0 0.0 0.2]
+              \C [0.0 0.6 0.2 0.0]
+              \G [0.2 0.2 0.8 0.0]
+              \T [0.0 0.2 0.0 0.8]} "AGGA"))))
+  (testing "gibbs sampler"
+    (is (= (score ["TCTCGGGG"
+                   "CCAAGGTG"
+                   "TACAGGCG"
+                   "TTCAGGTG"
+                   "TCCACGTG"])
+           (score (gibbs-sampler 8 100 ["CGCCCCTCTCGGGGGTGTTCAGTAAACGGCCA"
+                                        "GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG"
+                                        "TAGTACCGAGACCGAAAGAAGTATACAGGCGT"
+                                        "TAGATCAAGTTTCAGGTGCACGTCGGTGAACC"
+                                        "AATCCACCAGCTCCACGTGCAATGTTGGCCTA"] 20))))))
 (deftest entropies
   (testing "calculating entropies"
     (is (= 0.0 (entropy "AAAAAAAA")))

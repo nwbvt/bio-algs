@@ -152,6 +152,17 @@
           end (+ start k)]
       (subs strand start end))))
 
+(defn iterate-alg
+  "iterates over an algorithm"
+  [iters func & args]
+  (loop [left iters best-motifs nil best-score nil]
+    (if (zero? left) best-motifs
+      (let [new-motifs (apply func args)
+            new-score (score new-motifs) ]
+        (if (or (nil? best-motifs) (< new-score best-score))
+          (recur (dec left) new-motifs new-score)
+          (recur (dec left) best-motifs best-score))))))
+
 (defn randomized-motif-search
   "Performs the randomized motif search with an optional iterations parameter"
   ([k strands]
@@ -164,10 +175,46 @@
          (recur new-motifs new-score)
          best-motifs))))
   ([k strands iters]
-   (loop [left iters best-motifs nil best-score nil]
+   (iterate-alg iters randomized-motif-search k strands)))
+
+(defn weighted-random
+  "generates a simple weighted number"
+  [probs]
+  (let [total (apply + probs)
+        r (rand total)]
+    (loop [left r curr 0 ps probs]
+      (if (< left (first ps)) curr
+        (recur (- left (first ps)) (inc curr) (rest ps))))))
+
+(defn prob-from-profile
+  "determines the probability of a kmer given a profile"
+  [profile kmer]
+  (apply * (map (fn [i] (nth (profile (nth kmer i)) i)) (range (count kmer)))))
+
+(defn profile-gen-random-kmer
+  "selects a kmer randomly from a profile"
+  [profile kmers]
+  (let [kmer-list (vec kmers)
+        probs (map (partial prob-from-profile profile) kmer-list)
+        r (weighted-random probs)]
+    (nth kmer-list r)))
+
+(defn gibbs-sampler
+  "runs the gibbs sampler algorithm"
+  ([k n strands]
+   (loop [left n
+          motifs (random-motifs k strands)
+          best-motifs motifs
+          best-score (score best-motifs) ]
      (if (zero? left) best-motifs
-       (let [new-motifs (randomized-motif-search k strands)
-             new-score (score new-motifs) ]
-         (if (or (nil? best-motifs) (< new-score best-score))
-           (recur (dec left) new-motifs new-score)
-           (recur (dec left) best-motifs best-score)))))))
+      (let [i (rand-int (count strands))
+           considered-motifs (concat (take i motifs) (drop (inc i) motifs))
+           profile (gen-profile considered-motifs true)
+           new-motif (profile-gen-random-kmer profile (all-kmers k (nth strands i)))
+           new-motifs (assoc (vec motifs) i new-motif)
+           new-score (score new-motifs)]
+       (if (< new-score best-score)
+         (recur (dec left) new-motifs new-motifs new-score)
+         (recur (dec left) new-motifs best-motifs best-score))))))
+  ([k n strands iters]
+   (iterate-alg iters gibbs-sampler k n strands)))
