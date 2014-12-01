@@ -34,6 +34,7 @@
   (/ (Math/log n) (Math/log base)))
 
 (defn entropy
+  "Calculates the entropy of a dna sequence"
   [col]
   (* -1 (apply +
                (for [aa [\A \T \C \G]
@@ -62,6 +63,13 @@
   [k dna]
   (let [kmers (apply union (map (partial all-kmers k) dna))]
     (apply min-key #(dist % dna) kmers)))
+
+(defn all-medians
+  "returns all medians"
+  [k dna]
+  (let [med (dist (median-string k dna) dna)
+        kmers (apply union (map (partial all-kmers k) dna))]
+    (filter #(= med (dist % dna)) kmers)))
 
 (defn score-kmer
   "Scores a kmer against a given profile"
