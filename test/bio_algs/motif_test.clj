@@ -1,7 +1,6 @@
 (ns bio-algs.motif-test
   (:require [clojure.test :refer :all]
             [bio-algs.motif :refer :all]))
-
 (deftest motif-finding
   (testing "motif enumeration"
     (is (= #{"ATA" "ATT" "GTT" "TTT"}
@@ -56,8 +55,8 @@
             \T [0.25  0.125 0.5   0.25  ]}
            (gen-profile ["AATC" "TATC" "AATG" "AACT"] true))))
   (testing "most likely profile"
-    (is (= "CCGAG" (most-probable-kmer 5 
-                                       "ACCTGTTTATTGCCTAAGTTCCGAACAAACCCAATATAGCCCGAGGGCCT" 
+    (is (= "CCGAG" (most-probable-kmer 5
+                                       "ACCTGTTTATTGCCTAAGTTCCGAACAAACCCAATATAGCCCGAGGGCCT"
                                        {\A [0.2 0.2 0.3 0.2 0.3]
                                         \C [0.4 0.3 0.1 0.5 0.1]
                                         \G [0.3 0.3 0.5 0.2 0.4]
@@ -68,8 +67,26 @@
                                           "AAGAATCAGTCA"
                                           "CAAGGAGTTCGC"
                                           "CACGTCAATCAC"
-                                          "CAATAATATTCG"]))))))
-
+                                          "CAATAATATTCG"])))))
+  (testing "motifs from profile function"
+    (is (= ["ACCT" "ATGT" "GCGT" "ACGA" "AGGT"]
+           (motifs-from-profile
+             {\A [0.8 0.0 0.0 0.2]
+              \C [0.0 0.6 0.2 0.0]
+              \G [0.2 0.2 0.8 0.0]
+              \T [0.0 0.2 0.0 0.8]}
+             ["TTACCTTAAC"
+              "GATGTCTGTC"
+              "ACGGCGTTAG"
+              "CCCTAACGAG"
+              "CGTCAGAGGT"]))))
+  (testing "randomized motif search"
+    (is (>= (score ["TCTCGGGG" "TCTCGGGG" "TACAGGCG" "TTCAGGTG" "TCCACGTG"])
+            (score (randomized-motif-search 8 ["CGCCCCTCTCGGGGGTGTTCAGTAAACGGCCA"
+                                               "GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG"
+                                               "TAGTACCGAGACCGAAAGAAGTATACAGGCGT"
+                                               "TAGATCAAGTTTCAGGTGCACGTCGGTGAACC"
+                                               "AATCCACCAGCTCCACGTGCAATGTTGGCCTA"] 100))))))
 (deftest entropies
   (testing "calculating entropies"
     (is (= 0.0 (entropy "AAAAAAAA")))

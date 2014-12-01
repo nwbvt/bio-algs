@@ -8,8 +8,7 @@
   [dna pattern]
   ((comp not neg?) (.indexOf dna pattern)))
 
-(defn matches-with-d-mismatches?
-  "returns true iff the dna matches with at most d mismatches"
+(defn matches-with-d-mismatches?  "returns true iff the dna matches with at most d mismatches"
   [pattern d dna]
   (true? (some (partial matches? dna) (varients pattern d false))))
 
@@ -24,7 +23,7 @@
   [dna k d]
   (let [dna-source (first dna)
         dna-to-compare (rest dna)]
-    (set 
+    (set
       (for [pattern (all-kmers k (first dna))
             pattern' (varients pattern d false)
             :when (every? (partial matches-with-d-mismatches? pattern' d) dna-to-compare)]
@@ -55,7 +54,7 @@
   [pattern dna]
   (if (string? dna)
     (apply min (map (partial hamming-dist pattern) (all-kmers (count pattern) dna)))
-    (apply + (map (partial dist pattern) dna))))           ;Sum the dists from each dna string 
+    (apply + (map (partial dist pattern) dna))))           ;Sum the dists from each dna string
 
 (defn median-string
   "Finds the median kmer in the given set of dna
@@ -67,7 +66,7 @@
 (defn score-kmer
   "Scores a kmer against a given profile"
   [kmer profile]
-  (apply * 
+  (apply *
          (for [i (range (count kmer))
                :let [a (nth kmer i)]]
            (nth (profile a) i))))
@@ -91,7 +90,7 @@
    (apply +
          (for [i (range n)
                :let [xs (map (partial #(nth % i)) motifs)
-                     freqs (frequencies xs) 
+                     freqs (frequencies xs)
                      consensus (apply max-key freqs (keys freqs))]]
            (count (filter (partial not= consensus) xs))))))
 
@@ -104,7 +103,7 @@
     (zipmap acids (for [acid acids]
                     (for [i (range n)
                           :let [total (+ t (if smooth? 4 0))
-                                found (+ (count (filter (partial = acid) (map #(nth % i) motifs))) 
+                                found (+ (count (filter (partial = acid) (map #(nth % i) motifs)))
                                          (if smooth? 1 0))]]
                       (/ found total))))))
 
@@ -129,3 +128,38 @@
         (if (>= new-score best-score)
           (recur best-motifs best-score (rest kmers))
           (recur motifs new-score (rest kmers)))))))
+
+(defn motifs-from-profile
+  "Generates the most likely motifs from a profile"
+  [profile strands]
+  (let [k (count (profile \A))]
+    (map #(most-probable-kmer k % profile) strands)))
+
+(defn random-motifs
+  "Generates random motifs for each strand"
+  [k strands]
+  (for [strand strands]
+    (let [n (count strand)
+          start (rand-int (inc (- n k)))
+          end (+ start k)]
+      (subs strand start end))))
+
+(defn randomized-motif-search
+  "Performs the randomized motif search with an optional iterations parameter"
+  ([k strands]
+   (loop [best-motifs (random-motifs k strands)
+          best-score (score best-motifs)]
+     (let [profile (gen-profile best-motifs true)
+           new-motifs (motifs-from-profile profile strands)
+           new-score (score new-motifs)]
+       (if (< new-score best-score)
+         (recur new-motifs new-score)
+         best-motifs))))
+  ([k strands iters]
+   (loop [left iters best-motifs nil best-score nil]
+     (if (zero? left) best-motifs
+       (let [new-motifs (randomized-motif-search k strands)
+             new-score (score new-motifs) ]
+         (if (or (nil? best-motifs) (< new-score best-score))
+           (recur (dec left) new-motifs new-score)
+           (recur (dec left) best-motifs best-score)))))))
