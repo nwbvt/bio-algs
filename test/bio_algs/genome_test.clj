@@ -13,5 +13,7 @@
   (testing "De Bruijn Graph"
     (is (= #{["AAG" ["AGA", "AGA"]] ["AGA" ["GAT"]] ["ATT" ["TTC"]] ["CTA" ["TAA"]] ["CTC" ["TCT"]]
              ["GAT" ["ATT"]] ["TAA" ["AAG"]] ["TCT" ["CTA" "CTC"]] ["TTC" ["TCT"]]}
-           (set (deBruijn 4 "AAGATTCTCTAAGA"))))))
+           (set (deBruijn 4 "AAGATTCTCTAAGA"))))
+    (is (= #{["AGG" ["GGG"]] ["CAG" ["AGG" "AGG"]] ["GAG" ["AGG"]] ["GGA" ["GAG"]] ["GGG" ["GGA" "GGG"]]}
+           (set (deBruijn-kmers ["GAGG" "CAGG" "GGGG" "GGGA" "CAGG" "AGGG" "GGAG"]))))))
 

@@ -40,3 +40,17 @@
                          (.substring text (inc index) (+ (inc index) j)))]
           :when (not-empty map-to)]
       [pat (sort map-to)])))
+
+(defn make-nodes
+  "Makes nodes for a deBruijn graph from the edge"
+  [edge]
+  [(apply str (take (dec (count edge)) edge)) (apply str (drop 1 edge))])
+
+(defn deBruijn-kmers
+  "Returns a De Bruijn graph from a list of kmers"
+  [kmers]
+  (sort
+   (let [nodes (map make-nodes kmers)
+        node-map (group-by first nodes)]
+    (for [[pre suf] node-map]
+      [pre (sort (map second suf))]))))
