@@ -1,7 +1,6 @@
 (ns bio-algs.genome
   (:require [bio-algs.motif :refer [all-kmers]]
-            [clojure.string :refer [join]]
-            ))
+            [clojure.string :refer [join split trim]]))
 
 (defn string-spelled
   "given a sequence of kmers such that each kmer's last k-1 letters
@@ -49,8 +48,71 @@
 (defn deBruijn-kmers
   "Returns a De Bruijn graph from a list of kmers"
   [kmers]
-  (sort
+  (apply hash-map (apply concat
    (let [nodes (map make-nodes kmers)
         node-map (group-by first nodes)]
     (for [[pre suf] node-map]
-      [pre (sort (map second suf))]))))
+      [pre (sort (map second suf))])))))
+
+(defn read-adj-list
+  "Reads in an adjancency list and turns it into a more usable format"
+  [adj-list]
+  (apply hash-map
+         (mapcat #(let [[l r] (split % #"->")]
+                    [(trim l) (split (trim r) #",")]) adj-list)))
+
+(defn format-path
+  "Formats the path in the desired format"
+  [path]
+  (join "->" path))
+
+(defn find-cycle
+  "Finds a cycle in the graph returns both the cycle and unused edges"
+  [graph start]
+  (loop [visited [], curr start, nodes graph]
+    (let [next-node (nodes curr) new-path (conj visited curr)]
+      (if (empty? next-node) [new-path nodes]
+        (recur new-path (first next-node) (assoc nodes curr (rest next-node)))))))
+
+(defn find-start
+  [graph path]
+  (if (empty? path) (first (keys graph))
+    (first (for [node path :when (not-empty (graph node))] node))))
+
+(defn insert-in
+  [to-insert path]
+  (if (empty? path) to-insert
+    (let [[pre suf] (split-with #(not= (first to-insert) %) path)]
+      (concat pre to-insert (rest suf)))))
+
+(defn euler-cycle
+  "Finds an Eulerian cycle given a directed graph"
+  [graph & [start]]
+  (loop [path [] unused graph max 10 start start]
+    (if (some not-empty (vals unused))
+      (let [[new-path new-unused] (find-cycle unused (or start (find-start unused path)))]
+        (recur (insert-in new-path path) new-unused (dec max) nil))
+      path)))
+
+(defn find-unbalanced
+  [path]
+  (let [freqs-out (fn [k] (count (path k)))
+        freqs-in (frequencies (apply concat (vals path)))
+        all (set (concat (keys freqs-in) (keys path)))]
+    (for [node all
+          :let [ins (get-in freqs-in [node] 0)
+                outs (freqs-out node)]
+          :when (not= ins outs)]
+      [(- ins outs) node])))
+
+(defn euler-path
+  "Finds an Eulerian path given a directed graph"
+  [graph]
+  (let [[[_ start] [_ end]] (-> graph find-unbalanced sort)
+        g-with-cycle (assoc graph end (conj (get-in graph [end] []) start))
+        cyc (euler-cycle g-with-cycle start)]
+    (take (dec (count cyc)) cyc)) )
+
+(defn string-recon
+  [segments]
+  (string-spelled (euler-path (deBruijn-kmers segments))))
