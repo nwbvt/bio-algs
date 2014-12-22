@@ -116,3 +116,19 @@
 (defn string-recon
   [segments]
   (string-spelled (euler-path (deBruijn-kmers segments))))
+
+(defn cycle-recon
+  [segments]
+  (string-spelled (euler-cycle (deBruijn-kmers segments))))
+
+(defn bin-string
+  [k n]
+  (clojure.string/replace (format (str "%" k "s") (Integer/toBinaryString n)) " " "0"))
+
+(defn universal-string
+  [k]
+  (let [patterns (map (partial bin-string k) (range (Math/pow 2 k)))
+        cyc (cycle-recon patterns)
+        len (count cyc)]
+    ;drop the last kmer
+    (apply str (take (- len (dec k)) cyc))))
