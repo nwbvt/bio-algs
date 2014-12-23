@@ -1,5 +1,6 @@
 (ns bio-algs.genome
   (:require [bio-algs.motif :refer [all-kmers]]
+            [bio-algs.core :refer [read-file]]
             [clojure.string :refer [join split trim]]))
 
 (defn string-spelled
@@ -43,7 +44,9 @@
 (defn make-nodes
   "Makes nodes for a deBruijn graph from the edge"
   [edge]
-  [(apply str (take (dec (count edge)) edge)) (apply str (drop 1 edge))])
+  (if (or (vector? edge) (seq? edge))
+    (let [both (map make-nodes edge)] [(map first both) (map second both)])
+    [(apply str (take (dec (count edge)) edge)) (apply str (drop 1 edge))]))
 
 (defn deBruijn-kmers
   "Returns a De Bruijn graph from a list of kmers"
@@ -51,8 +54,8 @@
   (apply hash-map (apply concat
    (let [nodes (map make-nodes kmers)
         node-map (group-by first nodes)]
-    (for [[pre suf] node-map]
-      [pre (sort (map second suf))])))))
+     (for [[pre suf] node-map]
+       [pre (map second suf)])))))
 
 (defn read-adj-list
   "Reads in an adjancency list and turns it into a more usable format"
@@ -132,3 +135,23 @@
         len (count cyc)]
     ;drop the last kmer
     (apply str (take (- len (dec k)) cyc))))
+
+(defn gapped-string-spelled
+  "Spells a string from read pairs"
+  [k d seqs]
+  (let [f-pats (map first seqs)
+        s-pats (map second seqs)
+        f-string (string-spelled f-pats)
+        s-string (string-spelled s-pats)]
+    (apply str (concat (take (+ k d) f-string) s-string))))
+
+(defn recon-from-read-pairs
+  "reconstruct a string from read pairs"
+  [k d read-pairs]
+  (gapped-string-spelled k d (euler-path (deBruijn-kmers read-pairs))))
+
+(defn read-read-pairs
+  "Reads in the actual read-pairs from a input file"
+  [file]
+  (let [raw (read-file file)]
+    (map #(split % #"\|") raw)))
