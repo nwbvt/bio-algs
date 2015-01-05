@@ -31,3 +31,30 @@
         down (take n (drop 1 lines))
         right (drop (inc n) lines)]
     {:n n :m m :down down :right right}))
+
+(defn find-backtrack
+  "backtracks through the graph to find the longest common subseq"
+  [s seq1 seq2]
+  (loop [i (count seq1) j (count seq2) common '()]
+    (if (or (zero? i) (zero? j)) common
+      (let [v (s [i, j])]
+        (case (:d v)
+          :down   (recur (dec i) j common)
+          :right  (recur i (dec j) common)
+          :across (recur (dec i) (dec j) (conj common (nth seq1 (dec i)))))))))
+
+(defn longest-common-subseq
+  "find the longest common subsequence of two dna strands"
+  [seq1 seq2]
+  (let [s (atom {})
+        helper (fn [s i j]
+                 (let [d-val {:v (if (zero? i) 0 (:v (s [(dec i) j]))) :d :down}
+                       r-val {:v (if (zero? j) 0 (:v (s [i, (dec j)]))) :d :right}
+                       across-val {:v (if (or (zero? i) (zero? j) (not= (nth seq1 (dec i)) (nth seq2 (dec j)))) 0
+                                        (inc (:v (s [(dec i) (dec j)]))))
+                                   :d :across}
+                       v (max-key :v d-val r-val across-val)]
+                   (assoc s [i,j] v)))]
+    (doseq [i (range 0 (inc (count seq1))) j (range 0 (inc (count seq2)))]
+      (swap! s helper i j))
+    (apply str (find-backtrack @s seq1 seq2))))

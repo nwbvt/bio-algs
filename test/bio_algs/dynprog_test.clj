@@ -17,4 +17,6 @@
                        [3 2 4 2]
                        [0 7 3 3]
                        [3 3 0 2]
-                       [1 3 2 2]])))))
+                       [1 3 2 2]]))))
+  (testing "Longest Common Subsequence"
+    (is (= "ACCTGG" (longest-common-subseq "AACCTTGG" "ACACTGTGA")))))
