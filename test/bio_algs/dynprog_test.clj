@@ -19,4 +19,22 @@
                        [3 3 0 2]
                        [1 3 2 2]]))))
   (testing "Longest Common Subsequence"
-    (is (= "ACCTGG" (longest-common-subseq "AACCTTGG" "ACACTGTGA")))))
+    (is (= "ACCTGG" (longest-common-subseq "AACCTTGG" "ACACTGTGA"))))
+  (testing "Topological ordering"
+    (is (= [0 3 4 1 2]
+           (top-order [[0 1]
+                       [1 2]
+                       [3 1]
+                       [3 4]
+                       [4 1]
+                       [4 2]])))
+    )
+  (testing "Longest Common Path"
+    (is (= [9 [0 2 3 4]]
+           (longest-common-path
+             0 4
+             [[0 1 7]
+              [0 2 4]
+              [2 3 2]
+              [1 4 1]
+              [3 4 3]])))))

@@ -1,5 +1,6 @@
 (ns bio-algs.dynprog
-  (:require [clojure.string :refer [split]]))
+  (:require [clojure.string :refer [split]])
+  (:require [clojure.set :refer :all]))
 
 (defn find-change
   "given a money value and a list of coins, return the minimum number of coins needed to make that amount"
@@ -58,3 +59,44 @@
     (doseq [i (range 0 (inc (count seq1))) j (range 0 (inc (count seq2)))]
       (swap! s helper i j))
     (apply str (find-backtrack @s seq1 seq2))))
+
+(defn top-order
+  [graph]
+  (let [all-edges (map #(vec [(first %) (second %)]) graph)
+        all-nodes (set (apply concat all-edges))]
+    (loop [order []
+           edges (set all-edges)]
+      (let [out-nodes (set (map second edges))
+            candidates (difference all-nodes out-nodes (set order))]
+        (if (empty? candidates)
+          (do (assert (empty? edges) "Graph was not a DAG") order)
+          (let [n (first candidates)
+                edges-to-remove (filter #(= n (first %)) edges)]
+            (recur (conj order n) (difference edges edges-to-remove))))))))
+
+(defn longest-common-path
+  "solves a generic longest path problem"
+  [source sink graph]
+  (let [s (atom {nil {:p nil :v -1}})
+        order (top-order graph)
+        helper (fn [s n]
+                 (let [in-edges (filter #(= n (second %)) graph)
+                       in-vals (map #(hash-map :p (first %)
+                                               :v (+ (nth % 2) (:v (s (first %))))) in-edges)
+                       v (if (not-empty in-vals) (apply max-key :v in-vals) {:p nil :v 0})]
+                   (assoc s n v)))]
+    (doseq [n order]
+      (swap! s helper n))
+    (println @s)
+    (loop [n sink path (seq [sink]) count 1000]
+      (assert (pos? count))
+      (if (= source n) [(apply + path) path]
+        (let [p (:p (@s n))]
+          (recur p (conj path p) (dec count)))))))
+
+(defn read-graph
+  [filename]
+  (let [lines (split (slurp filename) #"\n")]
+    (map #(let [[path, weight] (split % #":")
+                [in, out] (split path #"->")]
+            [(Integer/parseInt in) (Integer/parseInt out) (Integer/parseInt weight)]) lines)))
