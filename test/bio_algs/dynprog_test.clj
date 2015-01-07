@@ -19,7 +19,8 @@
                        [3 3 0 2]
                        [1 3 2 2]]))))
   (testing "Longest Common Subsequence"
-    (is (= "ACCTGG" (longest-common-subseq "AACCTTGG" "ACACTGTGA"))))
+    (is (= [6 "AAC-CT-TGG" "-ACACTGTGA"] (longest-common-subseq "AACCTTGG" "ACACTGTGA")))
+    (is (= [8 "PLEASANTLY" "-ME--AN-LY"] (longest-common-subseq "PLEASANTLY" "MEANLY" 5 blosum62)))) 
   (testing "Topological ordering"
     (is (= [0 3 4 1 2]
            (top-order [[0 1]
@@ -27,8 +28,7 @@
                        [3 1]
                        [3 4]
                        [4 1]
-                       [4 2]])))
-    )
+                       [4 2]]))))
   (testing "Longest Common Path"
     (is (= [9 [0 2 3 4]]
            (longest-common-path
