@@ -109,6 +109,11 @@
                 [in, out] (split path #"->")]
             [(Integer/parseInt in) (Integer/parseInt out) (Integer/parseInt weight)]) lines)))
 
+(defn edit-distance
+  "Finds the edit distance between 2  strings"
+  [seq1 seq2]
+  (* -1 (first (longest-common-subseq seq1 seq2 1 (fn [a b] (if (= a b) 0 -1))))))
+
 (defn score-mat
   "Creates a scoring function from a matrix"
   [matrix]

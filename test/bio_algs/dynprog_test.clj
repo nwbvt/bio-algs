@@ -38,4 +38,8 @@
               [0 2 4]
               [2 3 2]
               [1 4 1]
-              [3 4 3]])))))
+              [3 4 3]]))))
+  (testing "Edit distance"
+    (is (= 5
+           (edit-distance "PLEASANTLY" "MEANLY")
+           (edit-distance "MEANLY" "PLEASANTLY")))))
