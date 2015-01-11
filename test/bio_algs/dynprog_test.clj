@@ -1,7 +1,5 @@
 (ns bio-algs.dynprog-test
-  (:require [clojure.test :refer :all]
-            [bio-algs.dynprog :refer :all]))
-
+  (:require [clojure.test :refer :all] [bio-algs.dynprog :refer :all])) 
 (deftest dyanmic-programming-functions
   (testing "does the find change function work correctly"
     (is (= 2 (find-change 24 [50 12 10 5 1])))
@@ -21,9 +19,9 @@
   (testing "Longest Common Subsequence"
     (is (= [6 "AAC-CT-TGG" "-ACACTGTGA"] (longest-common-subseq "AACCTTGG" "ACACTGTGA")))
     (is (= [8 "PLEASANTLY" "-ME--AN-LY"] (longest-common-subseq "PLEASANTLY" "MEANLY" 5 blosum62))) 
-    (is (= [15 "EANL-Y" "ENALTY"] (longest-common-subseq "MEANLYM" "PENALTYP" 5 pam250 true))))  
-  (testing "Topological ordering"
-    (is (= [0 3 4 1 2]
+    (is (= [15 "EANL-Y" "ENALTY"] (longest-common-subseq "MEANLYM" "PENALTYP" 5 pam250 :local)))  
+    (is (= [2 "TAGGCTTA" "TA-G-ATA"] (longest-common-subseq "GTAGGCTTAAGGTTA" "TAGATA" 1 (partial simple-matching 1) :fit))))   
+  (testing "Topological ordering" (is (= [0 3 4 1 2]
            (top-order [[0 1]
                        [1 2]
                        [3 1]

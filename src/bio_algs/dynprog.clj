@@ -33,31 +33,44 @@
         right (drop (inc n) lines)]
     {:n n :m m :down down :right right}))
 
+(defn get-start
+  "gets the starting position for the backtrack"
+  [s max-i max-j locality]
+  (case locality
+    :local (apply max-key (fn [[a b]] (:v (s [a b]))) (for [a (range max-i) b (range max-j)] [a b])) 
+    :global [max-i max-j] 
+    :fit [(apply max-key #(:v (s [% max-j])) (range max-i)) max-j]))
+
 (defn find-backtrack
   "backtracks through the graph to find the longest common subseq"
-  [s seq1 seq2 local?]
-  (let [[start-i start-j]
-        (if local? (apply max-key (fn [[a b]] (:v (s [a b]))) (for [a (range (count seq1)) b (range (count seq2))] [a b]))
-                   [(count seq1) (count seq2)])]
+  [s seq1 seq2 locality]
+  (let [[start-i start-j] (get-start s (count seq1) (count seq2) locality)]
    (loop [i start-i j start-j align1 '() align2 '()]
     (if (and (zero? i) (zero? j)) [(:v (s [start-i start-j])) (apply str align1) (apply str align2)]
-      (let [v (cond (zero? i) {:d :right} (zero? j) {:d :down} :else (s [i, j]))]
+      (let [v (cond (zero? i) (if (= :local locality) {:d :start} {:d :right})
+                    (zero? j) (if (not= :global locality) {:d :start} {:d :down})
+                    :else (s [i, j]))]
         (case (:d v)
           :start  (recur 0 0 align1 align2)
           :down   (recur (dec i) j (conj align1 (nth seq1 (dec i))) (conj align2 "-"))
           :right  (recur i (dec j) (conj align1 "-") (conj align2 (nth seq2 (dec j))))
           :across (recur (dec i) (dec j) (conj align1 (nth seq1 (dec i))) (conj align2 (nth seq2 (dec j))))))))))
 
+(defn simple-matching
+  "simple matching"
+  [penalty i j]
+  (if (= i j) 1 (* -1 penalty)))
+
 (defn longest-common-subseq
   "find the longest common subsequence of two dna strands"
   ([seq1 seq2] (longest-common-subseq seq1 seq2 0))
-  ([seq1 seq2 indel-pen] (longest-common-subseq seq1 seq2 indel-pen (fn [i j] (if (= i j) 1 0))))
-  ([seq1 seq2 indel-pen score-fn] (longest-common-subseq seq1 seq2 indel-pen score-fn false))
-  ([seq1 seq2 indel-pen score-fn local?]
+  ([seq1 seq2 indel-pen] (longest-common-subseq seq1 seq2 indel-pen (partial simple-matching 0)))
+  ([seq1 seq2 indel-pen score-fn] (longest-common-subseq seq1 seq2 indel-pen score-fn :global))
+  ([seq1 seq2 indel-pen score-fn locality]
     (let [s (atom {[0 0] {:v 0}})
           helper (fn [s i j]
                    (assoc s [i,j]
-                     (let [start {:v (if local? 0 Double/NEGATIVE_INFINITY) :d :start}
+                     (let [start {:v (if (or (= :local locality) (and (= :fit locality) (= 0 j))) 0 Double/NEGATIVE_INFINITY) :d :start}
                            d-val {:v (if (zero? i) Double/NEGATIVE_INFINITY (- (:v (s [(dec i) j])) indel-pen)) :d :down}
                            r-val {:v (if (zero? j) Double/NEGATIVE_INFINITY (- (:v (s [i (dec j)])) indel-pen)) :d :right}
                            across-val {:v (if (or (zero? i) (zero? j)) Double/NEGATIVE_INFINITY
@@ -67,7 +80,7 @@
                        (max-key :v d-val r-val across-val start))))]
       (doseq [i (range 0 (inc (count seq1))) j (range 0 (inc (count seq2))) :when (or (pos? i) (pos? j))]
         (swap! s helper i j))
-      (find-backtrack @s seq1 seq2 local?))))
+      (find-backtrack @s seq1 seq2 locality))))
 
 (defn top-order
   [graph]
