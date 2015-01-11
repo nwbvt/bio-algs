@@ -20,7 +20,8 @@
                        [1 3 2 2]]))))
   (testing "Longest Common Subsequence"
     (is (= [6 "AAC-CT-TGG" "-ACACTGTGA"] (longest-common-subseq "AACCTTGG" "ACACTGTGA")))
-    (is (= [8 "PLEASANTLY" "-ME--AN-LY"] (longest-common-subseq "PLEASANTLY" "MEANLY" 5 blosum62)))) 
+    (is (= [8 "PLEASANTLY" "-ME--AN-LY"] (longest-common-subseq "PLEASANTLY" "MEANLY" 5 blosum62))) 
+    (is (= [15 "EANL-Y" "ENALTY"] (longest-common-subseq "MEANLYM" "PENALTYP" 5 pam250 true))))  
   (testing "Topological ordering"
     (is (= [0 3 4 1 2]
            (top-order [[0 1]
