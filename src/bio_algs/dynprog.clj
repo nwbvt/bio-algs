@@ -39,7 +39,8 @@
   (case locality
     :local (apply max-key (fn [[a b]] (:v (s [a b]))) (for [a (range max-i) b (range max-j)] [a b])) 
     :global [max-i max-j] 
-    :fit [(apply max-key #(:v (s [% max-j])) (range max-i)) max-j]))
+    :fit [(apply max-key #(:v (s [% max-j])) (range max-i)) max-j]
+    :overlap [max-i (apply max-key #(:v (s [max-i %])) (range max-j))]))
 
 (defn find-backtrack
   "backtracks through the graph to find the longest common subseq"
@@ -70,7 +71,9 @@
     (let [s (atom {[0 0] {:v 0}})
           helper (fn [s i j]
                    (assoc s [i,j]
-                     (let [start {:v (if (or (= :local locality) (and (= :fit locality) (= 0 j))) 0 Double/NEGATIVE_INFINITY) :d :start}
+                     (let [start {:v (if
+                                       (or (= :local locality) (and (or (= :overlap locality) (= :fit locality)) (= 0 j)))
+                                       0 Double/NEGATIVE_INFINITY) :d :start}
                            d-val {:v (if (zero? i) Double/NEGATIVE_INFINITY (- (:v (s [(dec i) j])) indel-pen)) :d :down}
                            r-val {:v (if (zero? j) Double/NEGATIVE_INFINITY (- (:v (s [i (dec j)])) indel-pen)) :d :right}
                            across-val {:v (if (or (zero? i) (zero? j)) Double/NEGATIVE_INFINITY

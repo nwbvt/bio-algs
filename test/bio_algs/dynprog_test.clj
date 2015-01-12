@@ -20,7 +20,8 @@
     (is (= [6 "AAC-CT-TGG" "-ACACTGTGA"] (longest-common-subseq "AACCTTGG" "ACACTGTGA")))
     (is (= [8 "PLEASANTLY" "-ME--AN-LY"] (longest-common-subseq "PLEASANTLY" "MEANLY" 5 blosum62))) 
     (is (= [15 "EANL-Y" "ENALTY"] (longest-common-subseq "MEANLYM" "PENALTYP" 5 pam250 :local)))  
-    (is (= [2 "TAGGCTTA" "TA-G-ATA"] (longest-common-subseq "GTAGGCTTAAGGTTA" "TAGATA" 1 (partial simple-matching 1) :fit))))   
+    (is (= [2 "TAGGCTTA" "TA-G-ATA"] (longest-common-subseq "GTAGGCTTAAGGTTA" "TAGATA" 1 (partial simple-matching 1) :fit)))
+    (is (= [1 "HEAE" "HEAG"] (longest-common-subseq "PAWHEAE" "HEAGAWGHEE" 2 (partial simple-matching 2) :overlap))))   
   (testing "Topological ordering" (is (= [0 3 4 1 2]
            (top-order [[0 1]
                        [1 2]
