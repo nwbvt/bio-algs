@@ -36,3 +36,30 @@
   (let [n (count perm)
         with-edges (concat [0] perm [(inc n)])]
     (count (filter #(not= 1 %) (map #(- (nth with-edges (inc %)) (nth with-edges %)) (range (inc n)))))))
+
+(defn find-next-block
+  "finds the next block for a given block in a given genome"
+  [block genome]
+  (some (fn [chromosome]
+          (let [indices (map #(.indexOf chromosome %) [block (- block)])
+                next-index (cond 
+                             (<= 0 (first indices)) (inc (first indices))
+                             (<= 0 (second indices)) (dec (second indices)))]
+            (if next-index (nth chromosome (mod next-index (count chromosome))))))
+        genome))
+
+#_(defn count-cycles
+  "counts the number of cycles in the breakpoint graph between two genomes"
+  [genome1 genome2]
+  (apply +
+         (for [c genome1]
+           
+           )
+         )
+  )
+
+#_(defn two-break
+  "Calculate the 2 break distance between two genomes"
+  [genome1 genome2]
+  (- (apply + (map count genome1))
+     (count-cycles genome1 genome2)))
