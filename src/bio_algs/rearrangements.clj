@@ -29,3 +29,10 @@
   "Formats a permutation"
   [perm]
   (str "(" (join " " (map #(format "%+d" %)perm)) ")"))
+
+(defn count-breakpoints
+  "counts the number of breakpoints in the permutation"
+  [perm]
+  (let [n (count perm)
+        with-edges (concat [0] perm [(inc n)])]
+    (count (filter #(not= 1 %) (map #(- (nth with-edges (inc %)) (nth with-edges %)) (range (inc n)))))))
