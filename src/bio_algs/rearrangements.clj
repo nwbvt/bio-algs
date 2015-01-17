@@ -61,7 +61,7 @@
             (recur cycles next-vert (disj left next-vert) (rest genomes))
             (recur (inc cycles) (first left) (set (rest left)) (rest genomes))))))))
 
-(defn two-break
+(defn distance
   "Calculate the 2 break distance between two genomes"
   [genome1 genome2]
   (- (apply + (map count genome1))
