@@ -16,7 +16,11 @@
     (is (= 3
            (find-next-block 2 '((1 2 3 4 5 6)))
            (find-next-block 2 '((1 4 5 6) (3 2)))
-           (find-next-block 2 '((1 3 -2 4 5 6))))
+           (find-next-block 2 '((1 -3 -2 4 5 6))))
         (= -3 (find-next-block 2 '((1 2 -3) (4 5 6))))))
-  #_(testing "2 break distance"
+  (testing "count cycles"
+    (is (= 3
+           (count-cycles '((1 2) (5)) '((1 2) (5)))
+           (count-cycles '((1 2 3 4 5 6)) '((1 -3 -6 -5) (2 -4))))))
+  (testing "2 break distance"
     (is (= 3 (two-break '((1 2 3 4 5 6)) '((1 -3 -6 -5) (2 -4)))))))

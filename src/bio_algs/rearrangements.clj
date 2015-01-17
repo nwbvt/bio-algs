@@ -42,23 +42,25 @@
   [block genome]
   (some (fn [chromosome]
           (let [indices (map #(.indexOf chromosome %) [block (- block)])
-                next-index (cond 
-                             (<= 0 (first indices)) (inc (first indices))
-                             (<= 0 (second indices)) (dec (second indices)))]
-            (if next-index (nth chromosome (mod next-index (count chromosome))))))
+                [next-index, mult] (cond
+                                     (<= 0 (first indices)) [(inc (first indices)), 1]
+                                     (<= 0 (second indices)) [(dec (second indices)), -1])]
+            (if next-index (* mult (nth chromosome (mod next-index (count chromosome)))))))
         genome))
 
-#_(defn count-cycles
+(defn count-cycles
   "counts the number of cycles in the breakpoint graph between two genomes"
   [genome1 genome2]
-  (apply +
-         (for [c genome1]
-           
-           )
-         )
-  )
+  (let [blocks (apply concat genome1)
+        all-verts (set (concat blocks (map - blocks)))]
+    (loop [cycles 0 vert (first all-verts) left (set (rest all-verts)) genomes (cycle [genome1 (map reverse genome2)])]
+      (if (empty? left) cycles
+        (let [next-vert (find-next-block vert (first genomes))]
+          (if (left next-vert)
+            (recur cycles next-vert (disj left next-vert) (rest genomes))
+            (recur (inc cycles) (first left) (set (rest left)) (rest genomes))))))))
 
-#_(defn two-break
+(defn two-break
   "Calculate the 2 break distance between two genomes"
   [genome1 genome2]
   (- (apply + (map count genome1))
