@@ -49,17 +49,27 @@
             (if next-index (* mult (nth chromosome (mod next-index (count chromosome)))))))
         genome))
 
-(defn count-cycles
-  "counts the number of cycles in the breakpoint graph between two genomes"
+(defn- rem-cycles
+  "recusion function for get cycles"
+  [vert left genomes cur]
+  (if (empty? left) [cur]
+    (let [next-vert (find-connected-vertex vert (first genomes))]
+      (if (left next-vert)
+        (rem-cycles next-vert (disj left next-vert) (rest genomes) (conj cur next-vert))
+        (cons cur (lazy-seq (rem-cycles (first left) (set (rest left)) (rest genomes) [(first left)])))))))
+
+(defn get-cycles
+  "gets the cycles in the breakpoint graph between two genomes"
   [genome1 genome2]
   (let [blocks (apply concat genome1)
         all-verts (set (concat blocks (map - blocks)))]
-    (loop [cycles 1 vert (first all-verts) left (set (rest all-verts)) genomes (cycle [genome1 genome2])]
-      (if (empty? left) cycles
-        (let [next-vert (find-connected-vertex vert (first genomes))]
-          (if (left next-vert)
-            (recur cycles next-vert (disj left next-vert) (rest genomes))
-            (recur (inc cycles) (first left) (set (rest left)) (rest genomes))))))))
+    (rem-cycles (first all-verts) (set (rest all-verts)) (cycle [genome1 genome2]) [(first all-verts)])))
+
+(defn count-cycles
+  "counts the number of cycles in the breakpoint graph between two genomes"
+  [genome1 genome2]
+  (count (get-cycles genome1 genome2)))
+
 
 (defn distance
   "Calculate the 2 break distance between two genomes"
