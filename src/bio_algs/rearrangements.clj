@@ -76,3 +76,26 @@
   [genome1 genome2]
   (- (apply + (map count genome1))
      (count-cycles genome1 genome2)))
+
+(defn non-trivial?
+  "True if the given cycle is not trivial"
+  [cyc]
+  (< 2 (count cyc)))
+
+(defn make-break
+  "Makes a 2 break change to a genome"
+  [genome break1 break2]
+  )
+
+(defn two-break-sort
+  "Sorts using two break sorting"
+  [start end]
+  (assert (= (->> start (apply concat) (map #(Math/abs %)) sort)
+             (->> end (apply concat) (map #(Math/abs %)) sort))
+          "Genomes do not contain same blocks, cannot be sorted")
+  (loop [genome start order [start]]
+    (let [cyc (first (filter non-trivial? (get-cycles genome end)))]
+      (if (nil? cyc) order
+        
+        )
+      )))

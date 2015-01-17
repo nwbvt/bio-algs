@@ -24,4 +24,11 @@
            (count-cycles '((1 2) (5)) '((1 2) (5)))
            (count-cycles '((1 2 3 4 5 6)) '((1 -3 -6 -5) (2 -4))))))
   (testing "2 break distance"
-    (is (= 3 (distance '((1 2 3 4 5 6)) '((1 -3 -6 -5) (2 -4)))))))
+    (is (= 3 (distance '((1 2 3 4 5 6)) '((1 -3 -6 -5) (2 -4))))))
+  (testing "making a 2 break"
+    (is (= '((1 -3 -6 -5 -4 2)) (make-break '((1 -3 -6 -5) (2 -4) '(-5 -1) '(4 2))))))
+  #_(testing "2 break sorting"
+    (let [out (two-break-sort '((1 -2 -3 4)) '((1 2 -4 -3)))]
+      (is (= 4 (count out)))
+      (is (= '((1 -2 -3 4)) (first out)))
+      (is (= '((1 2 -4 -3)) (last out))))))
