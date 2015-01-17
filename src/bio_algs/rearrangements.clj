@@ -37,14 +37,15 @@
         with-edges (concat [0] perm [(inc n)])]
     (count (filter #(not= 1 %) (map #(- (nth with-edges (inc %)) (nth with-edges %)) (range (inc n)))))))
 
-(defn find-next-block
-  "finds the next block for a given block in a given genome"
-  [block genome]
+(defn find-connected-vertex
+  "finds the connected vertex for a given vertex in a given genome
+   the - vertex is the vertex incoming to a given block, + outgoing"
+  [vertex genome]
   (some (fn [chromosome]
-          (let [indices (map #(.indexOf chromosome %) [block (- block)])
+          (let [indices (map #(.indexOf chromosome %) [vertex (- vertex)])
                 [next-index, mult] (cond
-                                     (<= 0 (first indices)) [(inc (first indices)), 1]
-                                     (<= 0 (second indices)) [(dec (second indices)), -1])]
+                                     (<= 0 (first indices)) [(inc (first indices)), -1]
+                                     (<= 0 (second indices)) [(dec (second indices)), 1])]
             (if next-index (* mult (nth chromosome (mod next-index (count chromosome)))))))
         genome))
 
@@ -53,9 +54,9 @@
   [genome1 genome2]
   (let [blocks (apply concat genome1)
         all-verts (set (concat blocks (map - blocks)))]
-    (loop [cycles 0 vert (first all-verts) left (set (rest all-verts)) genomes (cycle [genome1 (map reverse genome2)])]
+    (loop [cycles 1 vert (first all-verts) left (set (rest all-verts)) genomes (cycle [genome1 genome2])]
       (if (empty? left) cycles
-        (let [next-vert (find-next-block vert (first genomes))]
+        (let [next-vert (find-connected-vertex vert (first genomes))]
           (if (left next-vert)
             (recur cycles next-vert (disj left next-vert) (rest genomes))
             (recur (inc cycles) (first left) (set (rest left)) (rest genomes))))))))
