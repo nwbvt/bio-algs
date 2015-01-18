@@ -36,4 +36,6 @@
     (let [out (two-break-sort '((1 -2 -3 4)) '((1 2 -4 -3)))]
       (is (= 4 (count out)))
       (is (= '((1 -2 -3 4)) (first out)))
-      (is (= '((1 2 -4 -3)) (last out))))))
+      (is (= '((1 2 -4 -3)) (last out)))))
+  (testing "shared kmers"
+    (is (= [[0, 0] [0, 4] [4, 2] [6, 6]] (shared-kmers 3 "AAACTCATC" "TTTCAAATC")))))

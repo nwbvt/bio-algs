@@ -1,5 +1,6 @@
 (ns bio-algs.rearrangements
-  (:require [clojure.string :refer [join]]))
+  (:require [clojure.string :refer [join]]
+            [bio-algs.ori-rep :refer [reverse-comp]]))
 
 (defn reversal
   "Do a reversal of a permutation"
@@ -140,3 +141,14 @@
       (if (nil? cyc) order
         (let [new-genome (make-break genome [(first cyc) (first r-cyc)] [(second cyc) (second r-cyc)])]
           (recur new-genome (conj order new-genome)))))))
+
+(defn shared-kmers
+  "Returns the shared kmers between two dna strands"
+  [k strand1 strand2]
+  (let [n1 (count strand1) n2 (count strand2)]
+    (for [i (range (inc (- n1 k))) j (range (inc (- n2 k)))
+          :let [s1 (subs strand1 i (+ i k))
+                s2 (subs strand2 j (+ j k))
+                rev (reverse-comp s1)]
+          :when (or (= s1 s2) (= rev s2))]
+      [i j])))
