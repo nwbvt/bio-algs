@@ -145,10 +145,18 @@
 (defn shared-kmers
   "Returns the shared kmers between two dna strands"
   [k strand1 strand2]
-  (let [n1 (count strand1) n2 (count strand2)]
-    (for [i (range (inc (- n1 k))) j (range (inc (- n2 k)))
-          :let [s1 (subs strand1 i (+ i k))
-                s2 (subs strand2 j (+ j k))
-                rev (reverse-comp s1)]
-          :when (or (= s1 s2) (= rev s2))]
-      [i j])))
+  (let [locations (reduce (fn [m i]
+                            (let [s (subs strand2 i (+ i k))]
+                              (assoc m s (conj (or (m s) []) i))))
+                          {} (range (- (inc (count strand2)) k)))]
+    (reduce (fn [l i]
+              (let [s (subs strand1 i (+ i k))
+                    r (reverse-comp s)
+                    matches (doall (concat (locations s) (locations r)))] 
+                (if (empty? matches) l
+                  (doall (concat l (map #(vec [i %]) matches))))))
+            [] (range (- (inc (count strand1)) k)))))
+
+(defn format-pair
+  [[x y]]
+  (format "(%d, %d)" x y))

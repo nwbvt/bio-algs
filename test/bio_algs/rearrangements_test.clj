@@ -38,4 +38,4 @@
       (is (= '((1 -2 -3 4)) (first out)))
       (is (= '((1 2 -4 -3)) (last out)))))
   (testing "shared kmers"
-    (is (= [[0, 0] [0, 4] [4, 2] [6, 6]] (shared-kmers 3 "AAACTCATC" "TTTCAAATC")))))
+    (is (= [[0, 4] [0, 0] [4, 2] [6, 6]] (shared-kmers 3 "AAACTCATC" "TTTCAAATC")))))
