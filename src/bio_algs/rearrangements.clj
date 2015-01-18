@@ -30,6 +30,11 @@
   [perm]
   (str "(" (join " " (map #(format "%+d" %)perm)) ")"))
 
+(defn format-perms
+  "Formats a list of perms"
+  [perms]
+  (apply str (map format-perm perms)))
+
 (defn count-breakpoints
   "counts the number of breakpoints in the permutation"
   [perm]
@@ -82,10 +87,46 @@
   [cyc]
   (< 2 (count cyc)))
 
+(defn chromosome-to-graph
+  "converts a chromosome to a graph representation"
+  [chromosome]
+  (let [n (count chromosome)]
+    (reduce (fn [m i]
+              (assoc m
+                     (nth chromosome i) (- (nth chromosome (mod (inc i) n)))
+                     (- (nth chromosome (mod (inc i) n))) (nth chromosome i)))
+            {} (range n))))
+
+(defn genome-to-graph
+  "converts a genome list representation to a graph"
+  [genome]
+  (apply merge (map chromosome-to-graph genome)))
+
+(defn graph-to-genome
+  "converts a graph representation to a genome list"
+  [graph & [start-with]]
+  (loop [genome '()
+         cur []
+         vert (or start-with (first (keys graph)))
+         g graph]
+    (if (nil? vert) genome
+      (let [next-vert (g vert)
+            next-g (dissoc g vert (- vert))
+            next-chrom (conj cur vert)]
+        (if (or (= (- next-vert) (first cur)) (= vert (- next-vert)))
+          (recur (conj genome (seq next-chrom)) [] (first (keys next-g)) next-g)
+          (recur genome next-chrom (- next-vert) next-g))))))
+
 (defn make-break
   "Makes a 2 break change to a genome"
-  [genome break1 break2]
-  )
+  [genome [start1 end1] [start2 end2]]
+  (let [initial-graph (genome-to-graph genome)
+        new-graph (assoc initial-graph
+                         start1 end1
+                         end1 start1
+                         start2 end2
+                         end2 start2)]
+    (graph-to-genome new-graph (first (first genome)))))
 
 (defn two-break-sort
   "Sorts using two break sorting"
@@ -94,8 +135,8 @@
              (->> end (apply concat) (map #(Math/abs %)) sort))
           "Genomes do not contain same blocks, cannot be sorted")
   (loop [genome start order [start]]
-    (let [cyc (first (filter non-trivial? (get-cycles genome end)))]
+    (let [cyc (first (filter non-trivial? (get-cycles genome end)))
+          r-cyc (reverse cyc)]
       (if (nil? cyc) order
-        
-        )
-      )))
+        (let [new-genome (make-break genome [(first cyc) (first r-cyc)] [(second cyc) (second r-cyc)])]
+          (recur new-genome (conj order new-genome)))))))

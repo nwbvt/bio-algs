@@ -25,9 +25,14 @@
            (count-cycles '((1 2 3 4 5 6)) '((1 -3 -6 -5) (2 -4))))))
   (testing "2 break distance"
     (is (= 3 (distance '((1 2 3 4 5 6)) '((1 -3 -6 -5) (2 -4))))))
+  (testing "to graph and back"
+    (is (= {1 -2, -2 1, 2 -3, -3 2, 3 -4, -4 3, 4 -1, -1 4} (genome-to-graph '((1 2 3 4)))))
+    (is (zero? (distance '((1 2 3 4)) (graph-to-genome {1 -2, -2 1, 2 -3, -3 2, 3 -4, -4 3, 4 -1, -1 4}))))
+    (is (= {1 -1, -1 1} (genome-to-graph '((1)))))
+    (is (zero? (distance '((1)) (graph-to-genome {1 -1, -1 1})))))
   (testing "making a 2 break"
-    (is (= '((1 -3 -6 -5 -4 2)) (make-break '((1 -3 -6 -5) (2 -4) '(-5 -1) '(4 2))))))
-  #_(testing "2 break sorting"
+    (is (zero? (distance '((1 -3 -6 -5 -4 2)) (make-break '((1 -3 -6 -5) (2 -4)) '(4 -5) '(-1 2))))))
+  (testing "2 break sorting"
     (let [out (two-break-sort '((1 -2 -3 4)) '((1 2 -4 -3)))]
       (is (= 4 (count out)))
       (is (= '((1 -2 -3 4)) (first out)))
