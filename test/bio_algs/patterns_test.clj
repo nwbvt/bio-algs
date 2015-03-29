@@ -45,3 +45,49 @@
       (is (false? (match? trie "ATGC")))
       (is (= (matches trie "AATCGGGTTCAATCGGGGT")
              [1 4 11 15])))))
+
+(deftest suffix-trees
+  (testing "creating a suffix tree"
+    (is (= (suffix-tree "ATAAATG$")
+           [[nil [1 2 11 12]]
+            [[0 1] [3 4]]
+            [[1 1] [9 10]]
+            [[1 1] [7 8]]
+            [[3 1] [5 6]]
+            [[4 4] []]
+            [[5 3] []]
+            [[2 6] []]
+            [[6 2] []]
+            [[2 6] []]
+            [[6 2] []]
+            [[6 2] []]
+            [[7 1] []]])))
+  (testing "displaying the labels of a suffix tree"
+    (is (= (sort 
+             (labels "ATAAATG$"
+               [[nil [1 2 11 12]]
+                [[0 1] [3 4]]
+                [[1 1] [9 10]]
+                [[1 1] [7 8]]
+                [[3 1] [5 6]]
+                [[4 4] []]
+                [[5 3] []]
+                [[2 6] []]
+                [[6 2] []]
+                [[2 6] []]
+                [[6 2] []]
+                [[6 2] []]
+                [[7 1] []]]))
+           (sort
+             ["AAATG$"
+              "G$"
+              "T"
+              "ATG$"
+              "TG$"
+              "A"
+              "A"
+              "AAATG$"
+              "G$"
+              "T"
+              "G$"
+              "$"])))))

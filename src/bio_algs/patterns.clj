@@ -46,3 +46,44 @@
   "Returns the indexes for which a pattern in the trie matches the text"
   [trie text]
   (filter #(match? trie (drop % text)) (range (count text))))
+
+(defn- text-at-node
+  [[[start len] _] text]
+  (subs text start (+ start len)))
+
+(defn- add-to-suffix-tree
+  [full-text old-tree text]
+  (loop [tree old-tree parent 0 l text]
+    (if (empty? l) tree
+      (let [[_ children] (nth tree parent)
+            c (first l)
+            matching (first (filter #(= c (first (text-at-node (nth tree %) full-text))) children))]
+        (if matching
+          (let [node-text (text-at-node (nth tree matching) full-text)
+                common (count (take-while #(= (nth l %) (nth node-text %)) (range (min (count l) (count node-text)))))
+                new-entry [[(+ (- (count full-text) (count l)) common) (- (count l) common)] []]]
+           (if (= common (count node-text))
+            (recur tree matching (drop common l))
+            (let [common (count (take-while #(= (nth l %) (nth node-text %)) (range (count l))))
+                  [[start old-end] siblings] (nth tree matching)
+                  new-matching [[start common]
+                                [(count tree) (inc (count tree))]]
+                  extended [[(+ start common) (- old-end common)] siblings]]
+              (conj (assoc tree matching new-matching) extended new-entry))))
+          (let [[parent-val siblings] (nth tree parent)
+                new-parent [parent-val (conj siblings (count tree))]
+                new-entry [[(- (count full-text) (count l)) (count l)] []]]
+            (conj (assoc tree parent new-parent) new-entry)))))))
+
+(defn suffix-tree
+  "Creates a suffix tree for the given text"
+  [text]
+  (reduce (partial add-to-suffix-tree text)
+          [[nil []]]
+          (take-while identity (iterate next text))))
+
+(defn labels
+  "Return the labels of the suffix tree"
+  [text tree]
+  (for [node tree :when (first node)]
+    (text-at-node node text)))
