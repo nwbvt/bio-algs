@@ -45,3 +45,8 @@
       (is (false? (match? trie "ATGC")))
       (is (= (matches trie "AATCGGGTTCAATCGGGGT")
              [1 4 11 15])))))
+
+(deftest suffix-arrays
+  (testing "Creating a suffix array"
+    (is (= (suffix-array "AACGATAGCGGTAGA$")
+           [15, 14, 0, 1, 12, 6, 4, 2, 8, 13, 3, 7, 9, 10, 11, 5]))))

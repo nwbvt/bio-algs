@@ -46,3 +46,8 @@
   "Returns the indexes for which a pattern in the trie matches the text"
   [trie text]
   (filter #(match? trie (drop % text)) (range (count text))))
+
+(defn suffix-array
+  [text]
+  (let [suffixes (for [i (range (count text))] (apply str (drop i text)))]
+    (sort-by (partial nth suffixes) (range (count text)))))
