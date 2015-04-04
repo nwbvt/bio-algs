@@ -51,6 +51,11 @@
   [[[start len] _] text]
   (subs text start (+ start len)))
 
+(defn common-start
+  "returns the longest common start between two strings"
+  [str1 str2]
+  (count (take-while #(= (nth str1 %) (nth str2 %)) (range (min (count str1) (count str2))))))
+
 (defn- add-to-suffix-tree
   [full-text old-tree text]
   (loop [tree old-tree parent 0 l text]
@@ -60,7 +65,7 @@
             matching (first (filter #(= c (first (text-at-node (nth tree %) full-text))) children))]
         (if matching
           (let [node-text (text-at-node (nth tree matching) full-text)
-                common (count (take-while #(= (nth l %) (nth node-text %)) (range (min (count l) (count node-text)))))
+                common (common-start l node-text)
                 new-entry [[(+ (- (count full-text) (count l)) common) (- (count l) common)] []]]
            (if (= common (count node-text))
             (recur tree matching (drop common l))
@@ -82,8 +87,76 @@
           [[nil []]]
           (take-while identity (iterate next text))))
 
+(defn match-2?
+  "Returns whether or not the pattern matches something within the text using a suffix tree"
+  [text pattern]
+  (let [tree (suffix-tree text)]
+    (loop [index 0 l pattern]
+      (let [[_ children] (nth tree index)
+            match (first (filter #(= (first l) (nth text (first (first (nth tree %))))) children))]
+        (if match
+          (let [node (nth tree match)
+                node-text (text-at-node node text)
+                common-count (common-start l node-text)]
+            (cond
+              (= common-count (count l)) true
+              (= common-count (count node-text)) (recur match (drop common-count l))
+              :default false))
+          false)))))
+
 (defn labels
   "Return the labels of the suffix tree"
   [text tree]
   (for [node tree :when (first node)]
     (text-at-node node text)))
+
+(defn repeats
+  "returns the repeats using a suffix tree"
+  ([text] (repeats (suffix-tree text) text 0))
+  ([tree text index]
+   (let [node (nth tree index)]
+     (if (empty? (second node))
+       []
+       (let [repeats-from-children (mapcat (partial repeats tree text) (second node))
+             all (conj repeats-from-children "")]
+         (map (partial str (if (first node) (text-at-node node text) "")) all))))))
+
+(defn longest-repeat
+  "Returns the longest repeat in a string using a suffix tree"
+  [text]
+  (let [all-repeats (repeats text)] (apply max-key count all-repeats)))
+
+(defn matches-start
+  "returns the longest prefix in text that is contained in the suffix tree"
+  [suffix-tree full-text to-match]
+  (loop [index 0 l to-match prefix ""]
+    (let [node (nth suffix-tree index)
+          common-node (first (filter #(= (first l) (first (text-at-node (nth suffix-tree %) full-text))) (second node)))]
+      (if common-node
+        (let [node-text (text-at-node (nth suffix-tree common-node) full-text)
+              common-count (common-start l node-text)
+              total-common (str prefix (apply str (take common-count l)))]
+          (if (= (count node-text) common-count)
+            (recur common-node (drop common-count l) total-common)
+            total-common))
+        prefix))))
+
+(defn longest-common
+  "Returns the longest common substring"
+  [str1 str2]
+  (let [tree (suffix-tree str1)
+        match-list (map (partial matches-start tree str1) (take-while identity (iterate next str2)))]
+    (apply max-key count match-list)))
+
+(defn- subseqs-of-size
+  "Returns all of the subsequences of the text of a particular size"
+  [text n]
+  (for [start (range (- (count text) n)) :let [end (+ start n)]]
+    (subs text start end)))
+
+(defn shortest-unique
+  "Returns the shortest non-common substrint"
+  [str1 str2]
+  (first 
+    (filter #(not (match-2? str2 %))
+            (mapcat (partial subseqs-of-size str1) (range 1 (count str1))))))

@@ -90,4 +90,13 @@
               "G$"
               "T"
               "G$"
-              "$"])))))
+              "$"]))))
+  (testing "using suffix trees for various problems"
+    (is (= (longest-repeat "ATATCGTTTTATCGTT")
+           "TATCGTT"))
+    (is (= (longest-common "TCGGTAGATTGCGCCCACTC" "AGGGGCTCGCAGTGTAAGAA") "AGA"))
+    (is (true? (match-2? "ATAAATG$" "AAA")))
+    (is (true? (match-2? "ATAAATG$" "TG$")))
+    (is (false? (match-2? "ATAAATG$" "AAAA")))
+    (is (false? (match-2? "ATAAATG$" "AATA")))
+    (is (= (shortest-unique "CCAAGCTGCTAGAGG$" "CATGCTGGGCTGGCT$") "CC"))))
