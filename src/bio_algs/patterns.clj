@@ -165,3 +165,30 @@
   [text]
   (let [suffixes (for [i (range (count text))] (apply str (drop i text)))]
     (sort-by (partial nth suffixes) (range (count text)))))
+
+(defn bw-transform
+  [text]
+  (let [double-text (concat text text)
+        len (count text)
+        cycles (map (partial take len)
+                    (take len (iterate next double-text)))]
+    (apply str (map last (sort-by #(apply str %) cycles)))))
+
+(defn- make-count-list
+  [s]
+  (loop [counts {} cl [] r s]
+    (if (empty? r) cl
+      (let [i (first r) c (or (counts i) 0)]
+        (recur (assoc counts i (inc c)) (conj cl [i c]) (rest r))))))
+
+(defn bw-recon
+  [bw]
+  (let [cl (make-count-list bw) 
+        sorted (sort cl)
+        end (first sorted)]
+    (loop [text [] c end]
+      (let [i (.indexOf cl c)
+            nc (nth sorted i)
+            new-text (conj text (first nc))]
+        (if (= nc end) (apply str new-text)
+          (recur new-text nc))))))

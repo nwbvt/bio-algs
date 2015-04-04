@@ -105,3 +105,11 @@
   (testing "Creating a suffix array"
     (is (= (suffix-array "AACGATAGCGGTAGA$")
            [15, 14, 0, 1, 12, 6, 4, 2, 8, 13, 3, 7, 9, 10, 11, 5]))))
+
+(deftest burrows-wheeler-transforms
+  (testing "Creating a Burrows-Wheeler Transform"
+    (is (= (bw-transform "GCGTGCCTGGTCA$")
+           "ACTGGCT$TGCGGC")))
+  (testing "Reforming from a Burrows-Wheeler Transform"
+    (is (= (bw-recon "TTCCTAACG$A")
+           "TACATCACGT$"))))
