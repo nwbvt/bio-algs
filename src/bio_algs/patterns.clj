@@ -160,3 +160,8 @@
   (first 
     (filter #(not (match-2? str2 %))
             (mapcat (partial subseqs-of-size str1) (range 1 (count str1))))))
+
+(defn suffix-array
+  [text]
+  (let [suffixes (for [i (range (count text))] (apply str (drop i text)))]
+    (sort-by (partial nth suffixes) (range (count text)))))

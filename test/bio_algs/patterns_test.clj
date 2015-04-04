@@ -100,3 +100,8 @@
     (is (false? (match-2? "ATAAATG$" "AAAA")))
     (is (false? (match-2? "ATAAATG$" "AATA")))
     (is (= (shortest-unique "CCAAGCTGCTAGAGG$" "CATGCTGGGCTGGCT$") "CC"))))
+
+(deftest suffix-arrays
+  (testing "Creating a suffix array"
+    (is (= (suffix-array "AACGATAGCGGTAGA$")
+           [15, 14, 0, 1, 12, 6, 4, 2, 8, 13, 3, 7, 9, 10, 11, 5]))))
