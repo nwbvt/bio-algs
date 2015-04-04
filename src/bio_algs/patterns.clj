@@ -167,6 +167,7 @@
     (sort-by (partial nth suffixes) (range (count text)))))
 
 (defn bw-transform
+  "Transforms into the burrows wheeler transformation of the text"
   [text]
   (let [double-text (concat text text)
         len (count text)
@@ -182,6 +183,7 @@
         (recur (assoc counts i (inc c)) (conj cl [i c]) (rest r))))))
 
 (defn bw-recon
+  "Transfroms from the burrows wheeler transofrmation back to the text"
   [bw]
   (let [cl (make-count-list bw) 
         sorted (sort cl)
