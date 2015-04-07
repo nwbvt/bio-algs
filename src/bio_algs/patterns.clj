@@ -194,3 +194,36 @@
             new-text (conj text (first nc))]
         (if (= nc end) (apply str new-text)
           (recur new-text nc))))))
+
+(defn b-search
+  "binary search of a sorted vector for x, returning its index"
+  [v x]
+  (loop [start 0 end (count v)]
+    (if (= start end) nil
+      (let [mid (int (+ start (/ (- end start) 2)))
+            f (nth v mid)
+            r (compare f x)]
+        (cond
+          (neg? r) (recur (inc mid) end)
+          (pos? r) (recur start mid)
+          :else mid)))))
+
+(defn last-to-first
+  "given a burrows wheeler transform, return a vector transforming the index in the
+  bw text to its index in the sorted text"
+  [bw]
+  (let [cl (make-count-list bw)
+        sorted (vec (sort cl))]
+    (vec (map (partial b-search sorted) cl))))
+
+(defn bw-match
+  "return the number of times the pattern appears in the burrows wheeler transform"
+  [bw pattern]
+  (let [l2f (last-to-first bw)]
+    (loop [start 0 end (dec (count bw)) p (reverse pattern)]
+      (if (empty? p) (inc (- end start))
+        (let [sym (first p)
+              start-index (first (drop-while #(not= sym (nth bw %)) (range start (inc end))))]
+          (if (nil? start-index) 0
+            (let [end-index (first (drop-while #(not= sym (nth bw %)) (range end (dec start) -1)))]
+              (recur (l2f start-index) (l2f end-index) (rest p)))))))))

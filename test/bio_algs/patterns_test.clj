@@ -112,4 +112,8 @@
            "ACTGGCT$TGCGGC")))
   (testing "Reforming from a Burrows-Wheeler Transform"
     (is (= (bw-recon "TTCCTAACG$A")
-           "TACATCACGT$"))))
+           "TACATCACGT$")))
+  (testing "BW matching"
+    (let [bw "TCCTCTATGAGATCCTATTCTATGAAACCTTCA$GACCAAAATTCTCCGGC"]
+      (is (= (map (partial bw-match bw) ["CCT" "CAC" "GAG" "CAG" "ATC"])
+             [2 1 1 0 1])))))
