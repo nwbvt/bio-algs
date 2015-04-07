@@ -216,14 +216,38 @@
         sorted (vec (sort cl))]
     (vec (map (partial b-search sorted) cl))))
 
+(defn first-occurences
+  "returns a map of the first occurance of a symbol in the sorted version of the given string"
+  [input]
+  (loop [i 0 res {} s (sort input) prev nil]
+    (if (empty? s) res
+      (let [c (first s)]
+        (if (= prev c) (recur (inc i) res (rest s) prev)
+          (recur (inc i) (assoc res c i) (rest s) c))))))
+
+(defn count-in-bw
+  "returns the number of occurences of c in the first i positions of the given bw transform"
+  [bw i c]
+  (count (filter (partial = c) (take i bw))))
+
+(defn count-map
+  "returns the count array for the bw for a given i"
+  [bw i]
+  (let [cs (set bw)] (zipmap cs (map (partial count-in-bw bw i) cs))))
+
+(defn count-matrix
+  "returns the count matrix for the bw"
+  [bw]
+  (vec (map (partial count-map bw) (range (inc (count bw))))))
+
 (defn bw-match
   "return the number of times the pattern appears in the burrows wheeler transform"
-  [bw pattern]
-  (let [l2f (last-to-first bw)]
-    (loop [start 0 end (dec (count bw)) p (reverse pattern)]
-      (if (empty? p) (inc (- end start))
-        (let [sym (first p)
-              start-index (first (drop-while #(not= sym (nth bw %)) (range start (inc end))))]
-          (if (nil? start-index) 0
-            (let [end-index (first (drop-while #(not= sym (nth bw %)) (range end (dec start) -1)))]
-              (recur (l2f start-index) (l2f end-index) (rest p)))))))))
+  ([bw pattern] (bw-match bw pattern (count-matrix bw)))
+  ([bw pattern counts]
+    (let [fo (first-occurences bw)]
+      (loop [start 0 end (dec (count bw)) p (reverse pattern)]
+        (if (empty? p) (inc (- end start))
+          (let [sym (first p)]
+            (let [new-start (+ (fo sym) ((counts start) sym))
+                  new-end (dec (+ (fo sym) ((counts (inc end)) sym)))]
+              (recur new-start new-end (rest p)))))))))
