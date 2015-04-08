@@ -225,25 +225,19 @@
         (if (= prev c) (recur (inc i) res (rest s) prev)
           (recur (inc i) (assoc res c i) (rest s) c))))))
 
-(defn count-in-bw
-  "returns the number of occurences of c in the first i positions of the given bw transform"
-  [bw i c]
-  (count (filter (partial = c) (take i bw))))
-
-(defn count-map
-  "returns the count array for the bw for a given i"
-  [bw i]
-  (let [cs (set bw)] (zipmap cs (map (partial count-in-bw bw i) cs))))
-
 (defn count-matrix
   "returns the count matrix for the bw"
   [bw]
-  (vec (map (partial count-map bw) (range (inc (count bw))))))
+  (vec (take (inc (count bw)) (iterate (fn [m]
+                                         (let [i (:i m)
+                                               c (nth bw i)]
+                                           (assoc m c (inc (m c)) :i (inc i))))
+                                       (zipmap (conj (set bw) :i) (repeat 0))))))
 
 (defn bw-match
   "return the number of times the pattern appears in the burrows wheeler transform"
-  ([bw pattern] (bw-match bw pattern (count-matrix bw)))
-  ([bw pattern counts]
+  ([bw pattern] (bw-match bw (count-matrix bw) pattern))
+  ([bw counts pattern]
     (let [fo (first-occurences bw)]
       (loop [start 0 end (dec (count bw)) p (reverse pattern)]
         (if (empty? p) (inc (- end start))
