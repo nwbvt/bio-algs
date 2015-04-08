@@ -225,23 +225,39 @@
         (if (= prev c) (recur (inc i) res (rest s) prev)
           (recur (inc i) (assoc res c i) (rest s) c))))))
 
+(defn- counts
+  [bw]
+  (iterate (fn [m]
+             (let [i (:i m)
+                   c (nth bw i)]
+               (assoc m c (inc (m c)) :i (inc i))))
+           (zipmap (conj (set bw) :i) (repeat 0))))
+
 (defn count-matrix
   "returns the count matrix for the bw"
   [bw]
-  (vec (take (inc (count bw)) (iterate (fn [m]
-                                         (let [i (:i m)
-                                               c (nth bw i)]
-                                           (assoc m c (inc (m c)) :i (inc i))))
-                                       (zipmap (conj (set bw) :i) (repeat 0))))))
+  (vec (take (inc (count bw)) (counts bw))))
+
+(defn checkpoint-array
+  [bw c]
+  (take (/ (inc (count bw)) c) (filter #(zero? (mod (:i %) c)) (counts bw))))
+
+(defn count-from-cp-array
+  "returns the count of sym before position i using the bw and checkpoint array"
+  [bw cp c sym i]
+  (let [cp-i (/ i c)]
+   (+ ((nth cp cp-i) sym)
+     (count (filter (partial = sym) (subs bw cp-i (+ cp-i (mod i c)))))))) 
 
 (defn bw-match
   "return the number of times the pattern appears in the burrows wheeler transform"
   ([bw pattern] (bw-match bw (count-matrix bw) pattern))
-  ([bw counts pattern]
+  ([bw counts pattern] (bw-match bw counts 1 pattern))
+  ([bw cp-array c pattern]
     (let [fo (first-occurences bw)]
       (loop [start 0 end (dec (count bw)) p (reverse pattern)]
         (if (empty? p) (inc (- end start))
           (let [sym (first p)]
-            (let [new-start (+ (fo sym) ((counts start) sym))
-                  new-end (dec (+ (fo sym) ((counts (inc end)) sym)))]
+            (let [new-start (+ (fo sym) (count-from-cp-array bw cp-array c sym start))
+                  new-end (dec (+ (fo sym) (count-from-cp-array bw cp-array c sym (inc end))))]
               (recur new-start new-end (rest p)))))))))
