@@ -255,10 +255,10 @@
   (let [fo (first-occurences bw)]
     (loop [start 0 end (dec (count bw)) p (reverse pattern)]
       (if (empty? p) [start end]
-        (let [sym (first p)]
-          (let [new-start (+ (fo sym) (count-from-cp-array bw cp-array c sym start))
-                new-end (dec (+ (fo sym) (count-from-cp-array bw cp-array c sym (inc end))))]
-            (recur new-start new-end (rest p))))))))
+        (let [sym (first p)
+              new-start (+ (fo sym) (count-from-cp-array bw cp-array c sym start))
+              new-end (dec (+ (fo sym) (count-from-cp-array bw cp-array c sym (inc end))))]
+          (recur new-start new-end (rest p)))))))
 
 (defn bw-match-count
   "return the number of times the pattern appears in the burrows wheeler transform"
