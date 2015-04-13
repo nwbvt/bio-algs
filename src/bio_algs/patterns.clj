@@ -270,8 +270,9 @@
 
 (defn bw-match
   "Find the locations of matches to the given patterns"
-  [text patterns]
-  (let [bw (bw-transform text) 
+  [raw-text patterns]
+  (let [text (str raw-text (if (.endsWith raw-text "$") "" "$"))
+        bw (bw-transform text)
         suffixes (suffix-array text)
         c 1
         cp-array (checkpoint-array bw c)]

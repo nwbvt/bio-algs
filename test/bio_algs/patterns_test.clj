@@ -118,6 +118,6 @@
       (is (= (map (partial bw-match-count bw)["CCT" "CAC" "GAG" "CAG" "ATC"])
              [2 1 1 0 1]))))
   (testing "BW matching with positions"
-    (let [text "AATCGGGTTCAATCGGGGT$"]
+    (let [text "AATCGGGTTCAATCGGGGT"]
       (is (= (sort (bw-match text ["ATCG" "GGGT"]))
              [1 4 11 15])))))
