@@ -113,7 +113,11 @@
   (testing "Reforming from a Burrows-Wheeler Transform"
     (is (= (bw-recon "TTCCTAACG$A")
            "TACATCACGT$")))
-  (testing "BW matching"
+  (testing "BW matching counts"
     (let [bw "TCCTCTATGAGATCCTATTCTATGAAACCTTCA$GACCAAAATTCTCCGGC"]
-      (is (= (map (partial bw-match bw) ["CCT" "CAC" "GAG" "CAG" "ATC"])
-             [2 1 1 0 1])))))
+      (is (= (map (partial bw-match-count bw)["CCT" "CAC" "GAG" "CAG" "ATC"])
+             [2 1 1 0 1]))))
+  #_(testing "BW matching with positions"
+    (let [bw (bw-transform "AATCGGGTTCAATCGGGGT$")]
+      (is (= (sort (mapcat (partial bw-match bw) ["ATCG" "GGGT"]))
+             [1 4 11 15])))))

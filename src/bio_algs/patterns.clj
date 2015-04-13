@@ -249,15 +249,28 @@
    (+ ((nth cp cp-i) sym)
      (count (filter (partial = sym) (subs bw cp-i (+ cp-i (mod i c)))))))) 
 
-(defn bw-match
+(defn- bw-matcher
+  "Helper function for bw matching"
+  [bw cp-array c pattern]
+  (let [fo (first-occurences bw)]
+    (loop [start 0 end (dec (count bw)) p (reverse pattern)]
+      (if (empty? p) [end start]
+        (let [sym (first p)]
+          (let [new-start (+ (fo sym) (count-from-cp-array bw cp-array c sym start))
+                new-end (dec (+ (fo sym) (count-from-cp-array bw cp-array c sym (inc end))))]
+            (recur new-start new-end (rest p))))))))
+
+(defn bw-match-count
   "return the number of times the pattern appears in the burrows wheeler transform"
-  ([bw pattern] (bw-match bw (count-matrix bw) pattern))
-  ([bw counts pattern] (bw-match bw counts 1 pattern))
+  ([bw pattern] (bw-match-count bw (count-matrix bw) pattern))
+  ([bw counts pattern] (bw-match-count bw counts 1 pattern))
   ([bw cp-array c pattern]
-    (let [fo (first-occurences bw)]
-      (loop [start 0 end (dec (count bw)) p (reverse pattern)]
-        (if (empty? p) (inc (- end start))
-          (let [sym (first p)]
-            (let [new-start (+ (fo sym) (count-from-cp-array bw cp-array c sym start))
-                  new-end (dec (+ (fo sym) (count-from-cp-array bw cp-array c sym (inc end))))]
-              (recur new-start new-end (rest p)))))))))
+    (inc (apply - (bw-matcher bw cp-array c pattern)))))
+
+(defn bw-match
+  "Find the locations of matches to the given patterns"
+  [text patterns]
+  (let [bw (bw-transform text) 
+        suffixes (suffix-array text)]
+    
+    ))
