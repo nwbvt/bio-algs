@@ -164,7 +164,7 @@
 (defn suffix-array
   [text]
   (let [suffixes (for [i (range (count text))] (apply str (drop i text)))]
-    (sort-by (partial nth suffixes) (range (count text)))))
+    (vec (sort-by (partial nth suffixes) (range (count text))))))
 
 (defn bw-transform
   "Transforms into the burrows wheeler transformation of the text"
@@ -254,7 +254,7 @@
   [bw cp-array c pattern]
   (let [fo (first-occurences bw)]
     (loop [start 0 end (dec (count bw)) p (reverse pattern)]
-      (if (empty? p) [end start]
+      (if (empty? p) [start end]
         (let [sym (first p)]
           (let [new-start (+ (fo sym) (count-from-cp-array bw cp-array c sym start))
                 new-end (dec (+ (fo sym) (count-from-cp-array bw cp-array c sym (inc end))))]
@@ -265,12 +265,15 @@
   ([bw pattern] (bw-match-count bw (count-matrix bw) pattern))
   ([bw counts pattern] (bw-match-count bw counts 1 pattern))
   ([bw cp-array c pattern]
-    (inc (apply - (bw-matcher bw cp-array c pattern)))))
+    (let [[start end] (bw-matcher bw cp-array c pattern)]
+     (inc (- end start)))))
 
 (defn bw-match
   "Find the locations of matches to the given patterns"
   [text patterns]
   (let [bw (bw-transform text) 
-        suffixes (suffix-array text)]
-    
-    ))
+        suffixes (suffix-array text)
+        c 1
+        cp-array (checkpoint-array bw c)]
+    (apply concat (for [pattern patterns :let [[start stop] (bw-matcher bw cp-array c pattern)]]
+                    (subvec suffixes start (inc stop))))))
