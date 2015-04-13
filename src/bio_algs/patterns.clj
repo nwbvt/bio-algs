@@ -171,9 +171,9 @@
   [text]
   (let [double-text (concat text text)
         len (count text)
-        cycles (map #(vec (take len %))
+        cycles (pmap #(vec (take len %))
                     (take len (iterate next double-text)))]
-    (apply str (map last (sort cycles)))))
+    (apply str (pmap last (sort cycles)))))
 
 (defn- make-count-list
   [s]
@@ -276,5 +276,4 @@
         suffixes (suffix-array text)
         c 1
         cp-array (checkpoint-array bw c)]
-    (apply concat (for [pattern patterns :let [[start stop] (bw-matcher bw cp-array c pattern)]]
-                    (subvec suffixes start (inc stop))))))
+    (apply concat (pmap #(let [[start stop] (bw-matcher bw cp-array c %)] (subvec suffixes start (inc stop))) patterns) )))
