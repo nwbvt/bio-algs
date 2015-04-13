@@ -171,9 +171,9 @@
   [text]
   (let [double-text (concat text text)
         len (count text)
-        cycles (map (partial take len)
+        cycles (map #(vec (take len %))
                     (take len (iterate next double-text)))]
-    (apply str (map last (sort-by #(apply str %) cycles)))))
+    (apply str (map last (sort cycles)))))
 
 (defn- make-count-list
   [s]
