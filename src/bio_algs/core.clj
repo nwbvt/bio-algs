@@ -22,4 +22,4 @@
 (defn read-file
   "Reads strings from a file"
   [filename]
-  (read-strands (apply str (slurp filename))))
+  (read-strands (slurp filename)))
