@@ -23,3 +23,8 @@
   "Reads strings from a file"
   [filename]
   (read-strands (slurp filename)))
+
+(defn to-ints
+  "Change the results of a file read to a list of integers"
+  [lines]
+  (map (fn [line] (map #(Integer/parseInt %) (split line #" "))) lines))
