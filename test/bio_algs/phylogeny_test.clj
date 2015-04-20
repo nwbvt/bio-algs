@@ -5,10 +5,9 @@
 (deftest weights
   (testing "parsing the graph"
     (is (= (parse-graph ["0->1:2" "0->2:3" "1->0:2" "1->3:4" "2->0:3" "3->1:4"])
-           {:0 {:1 2 :2 3}
-            :1 {:0 2 :3 4}
-            :2 {:0 3}
-            :3 {:1 4}})))
+           {0 {1 2 2 3}
+            1 {0 2 3 4}
+            2 {0 3} 3 {1 4}})))
   (testing "find the weight matrix"
     (is (= (weight-matrix (parse-graph ["0->4:11"
                                         "1->4:2"
