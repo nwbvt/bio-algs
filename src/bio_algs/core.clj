@@ -27,4 +27,4 @@
 (defn to-ints
   "Change the results of a file read to a list of integers"
   [lines]
-  (vec (map (fn [line] (vec (map #(Integer/parseInt %) (split line #" ")))) lines)))
+  (vec (map (fn [line] (vec (map #(Integer/parseInt %) (split line #"[ \t]")))) lines)))
