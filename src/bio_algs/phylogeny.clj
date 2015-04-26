@@ -7,7 +7,7 @@
   [text-edge]
   (let [[nodes weight] (split text-edge #":")
         [in-node out-node] (map #(Integer/parseInt %) (split nodes #"->"))]
-    [in-node out-node weight]))
+    [in-node out-node (Double/parseDouble weight)]))
 
 (defn parse-graph
   "Parses a graph from the textual format to a map of nodes to an array of connected nodes and the weights of each"
@@ -17,7 +17,7 @@
         nodes (keys edge-map)]
     (zipmap nodes
             (for [node nodes :let [edge-list (edge-map node)]]
-              (zipmap (map second edge-list) (map #(Integer/parseInt (nth % 2)) edge-list))))))
+              (zipmap (map second edge-list) (map #(nth % 2) edge-list))))))
 
 (defn- is-leaf?
   "Returns true iff the given node is a leaf for the given graph"
@@ -27,7 +27,7 @@
 (defn- walk-path
  "find the path and distance between two nodes"
  [graph node1 node2]
- (loop [nodes {node1 [[node1] 0]}]
+ (loop [nodes {node1 [[node1] 0.0]}]
    (if (nil? (nodes node2))
      (if (empty? nodes) [[] Double/POSITIVE_INFINITY]
        (recur (apply merge (for [[node [path d]] nodes
@@ -116,5 +116,41 @@
 (defn format-graph
   "Formats the graph"
   [graph]
-  (mapcat (fn [node] (map (fn [[k v]] (format "%d->%d:%d" node k v)) (graph node))) (sort (keys graph)))
-  )
+  (mapcat (fn [node] (map (fn [[k v]] (format "%d->%d:%f" node k v)) (graph node))) (sort (keys graph))))
+
+(def cluster-dist
+  "Find the distance between two clusters given a distance matrix"
+  (memoize
+    (fn [d-matrix c1 c2]
+      (/ (apply + (for [m1 (:members c1) m2 (:members c2)]
+                    ((d-matrix m1) m2)))
+         (* (count (:members c1)) (count (:members c2)))))))
+
+(defn- nearest-clusters
+  "Find the clusters that are nearest given a distance matrix"
+  [clusters d-matrix]
+  (apply min-key first
+         (for [c1 clusters c2 clusters :when (not= c1 c2)] [(cluster-dist d-matrix c1 c2) c1 c2])))
+
+(defn upgma
+  "Creates a ultrametric graph using unweighted pair group method with arithmetic mean"
+  [matrix]
+  (let [n (count matrix)]
+   (loop [clusters (set (map #(hash-map :index % :members (list %)) (range n)))
+          next-node n
+          ages (vec (repeat n 0))
+          t (zipmap (range n) (repeat n {}))]
+     (if (= (count clusters) 1) t
+       (let [[dist c1 c2] (nearest-clusters clusters matrix)
+             age (/ dist 2)
+             weight1 (double (- age (ages (:index c1))))
+             weight2 (double (- age (ages (:index c2))))]
+         (recur (conj (disj clusters c1 c2)
+                      {:index next-node :members (concat (:members c1) (:members c2))})
+                (inc next-node)
+                (conj ages age)
+                (-> t
+                    (assoc-in [(:index c1) next-node] weight1)
+                    (assoc-in [next-node (:index c1)] weight1)
+                    (assoc-in [(:index c2) next-node] weight2)
+                    (assoc-in [next-node (:index c2)] weight2))))))))

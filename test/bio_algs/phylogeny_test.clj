@@ -5,9 +5,10 @@
 (deftest weights
   (testing "parsing the graph"
     (is (= (parse-graph ["0->1:2" "0->2:3" "1->0:2" "1->3:4" "2->0:3" "3->1:4"])
-           {0 {1 2 2 3}
-            1 {0 2 3 4}
-            2 {0 3} 3 {1 4}})))
+           {0 {1 2.0 2 3.0}
+            1 {0 2.0 3 4.0}
+            2 {0 3.0}
+            3 {1 4.0}})))
   (testing "find the weight matrix"
     (is (= (weight-matrix (parse-graph ["0->4:11"
                                         "1->4:2"
@@ -19,10 +20,10 @@
                                         "5->4:4"
                                         "5->3:7"
                                         "5->2:6"]))
-           [[0	13	21	22]
-            [13	0	12	13]
-            [21	12	0	13]
-            [22	13	13	0]]))))
+           [[0.0 13.0 21.0 22.0]
+            [13.0 0.0 12.0 13.0]
+            [21.0 12.0 0.0 13.0]
+            [22.0 13.0 13.0 0.0]]))))
 
 (deftest finding-limb-length
   (testing "Finding the limb length of a node to its parent from a weight matrix"
@@ -34,10 +35,10 @@
 
 (deftest adaptive-phylogeny-algorithm
   (testing "Creating the tree matching the given distance matrix"
-    (is (= (make-tree [[0	13	21	22]
-                       [13	0	12	13]
-                       [21	12	0	13]
-                       [22	13	13	0 ]])
+    (is (= (make-tree [[0.0 13.0 21.0 22.0]
+                       [13.0 0.0 12.0 13.0]
+                       [21.0 12.0 0.0 13.0]
+                       [22.0 13.0 13.0 0.0]])
            (parse-graph ["0->4:11"
                          "1->4:2"
                          "2->5:6"
@@ -48,3 +49,22 @@
                          "5->4:4"
                          "5->3:7"
                          "5->2:6"])))))
+
+(deftest upgma-test
+  (testing "Implementation of UPGMA algoritm"
+    (is (= (upgma [[0	20	17	11]
+                   [20	0	20	13]
+                   [17	20	0	10]
+                   [11	13	10	0 ]])
+           (parse-graph ["0->5:7.000"
+                         "1->6:8.833333333333332"
+                         "2->4:5.000"
+                         "3->4:5.000"
+                         "4->2:5.000"
+                         "4->3:5.000"
+                         "4->5:2.000"
+                         "5->0:7.000"
+                         "5->4:2.000"
+                         "5->6:1.833333333333333"
+                         "6->5:1.833333333333333"
+                         "6->1:8.833333333333332"])))))
