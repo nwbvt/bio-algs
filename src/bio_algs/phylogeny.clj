@@ -1,6 +1,8 @@
 (ns bio-algs.phylogeny
   (:require [clojure.string :refer [split]]
-            [clojure.set :refer [intersection]]))
+            [clojure.set :refer [intersection]]
+            [bio-algs.core :refer [read-file to-ints write-result]]
+            ))
 
 (defn- parse-text-edge
   "convert the textual format of an edge to an array"
@@ -154,3 +156,80 @@
                     (assoc-in [next-node (:index c1)] weight1)
                     (assoc-in [(:index c2) next-node] weight2)
                     (assoc-in [next-node (:index c2)] weight2))))))))
+
+(defn- find-totals
+  [d]
+  (vec (map #(apply + %) d)))
+
+(defn d*
+  "create the D* matrix for neighbor joining algorithm"
+  ([matrix] (d* matrix (find-totals matrix)))
+  ([matrix totals]
+   (let [n (count matrix)
+         nodes (range n)]
+     (vec (for [n1 nodes]
+            (vec (for [n2 nodes]
+                   (if (= n1 n2) 0
+                     (- (* (- n 2) ((matrix n1) n2)) (totals n1) (totals n2))))))))))
+
+(defn min-val
+  "Find the coordinates of the given matrix that is the minimum"
+  [matrix]
+  (let [nodes (range (count matrix))]
+    (apply min-key (fn [[i j]]
+                     ((matrix i) j))
+           (for [i nodes j nodes :when (not= i j)] [i j]))))
+
+(defn remove-from-vec
+  [v & indices]
+  (vec (for [i (range (count v)) :when (neg? (.indexOf indices i))]
+         (v i))))
+
+(defn- make-new-d
+  [d i j]
+  (let [n (count d)
+        dij ((d i) j)
+        new-dists (conj (mapv (fn [k]
+                                (/ (- (+ ((d k) i) ((d k) j)) dij) 2))
+                              (remove-from-vec (vec (range n)) i j))
+                        0)
+        pruned (mapv #(remove-from-vec % i j) (remove-from-vec d i j))]
+    (conj
+      (vec (for [i (range (- n 2))]
+             (conj (pruned i) (new-dists i))))
+      new-dists)))
+
+(defn nj-tree
+  "Create a graph from the given distance matrix using the neighbor joining algorithm"
+  ([d] (nj-tree d (vec (range (count d))) (count d)))
+  ([d labels] (nj-tree d labels 0))
+  ([d labels next-node]
+   (let [n (count d)]
+     (assert (< 1 n) (str "distance matrix " d " too small"))
+     (if (= 2 n)
+       (let [[n1 n2] labels
+             dist (double ((d 1) 0))]
+         {n1 {n2 dist}
+          n2 {n1 dist}})
+       (let [totals (find-totals d)
+             [i j] (min-val (d* d totals))
+             t (nj-tree (make-new-d d i j)
+                        (conj (remove-from-vec labels i j) next-node)
+                        (inc next-node))
+             delta (/ (- (totals i) (totals j)) (- n 2))
+             dij ((d i) j)
+             i-node (labels i)
+             j-node (labels j)
+             i-limb (double (/ (+ dij delta) 2))
+             j-limb (double (/ (- dij delta) 2))]
+         (-> t
+             (assoc-in [next-node i-node] i-limb)
+             (assoc-in [i-node next-node] i-limb)
+             (assoc-in [next-node j-node] j-limb)
+             (assoc-in [j-node next-node] j-limb)))))))
+
+(defn run-nj-tree!
+  [infile]
+  (let [d (to-ints (rest (read-file infile)))
+        result (nj-tree d)]
+    (write-result (format-graph result))))
