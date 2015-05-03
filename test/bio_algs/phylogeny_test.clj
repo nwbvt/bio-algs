@@ -105,17 +105,30 @@
                              "6->5"])
           mapping (small-parsimony-mapping tree)]
      (is (= mapping {4 "ATAGCCAC" 5 "ATGGACGA" 6 "ATAGACAA"}))
-     #_(is (= (total-cost graph mapping) 16))
-     #_(is (= 
-           [16 (parse-graph ["ATTGCGAC->ATAGCCAC:2"
-                             "ATAGACAA->ATAGCCAC:2"
-                             "ATAGACAA->ATGGACTA:2"
-                             "ATGGACGA->ATGGACTA:1"
-                             "CTGCGCTG->ATGGACTA:4"
-                             "ATGGACTA->CTGCGCTG:4"
-                             "ATGGACTA->ATGGACGA:1"
-                             "ATGGACTA->ATAGACAA:2"
-                             "ATAGCCAC->CAAATCCC:5"
-                             "ATAGCCAC->ATTGCGAC:2"
-                             "ATAGCCAC->ATAGACAA:2"
-                             "CAAATCCC->ATAGCCAC:5"])])))))
+     (is (= (total-cost tree mapping) 16))
+     (is (= (sort (graph-edges-with-mapping tree mapping))
+            (sort ["ATTGCGAC->ATAGCCAC:2"
+                   "ATAGACAA->ATAGCCAC:2"
+                   "ATAGACAA->ATGGACGA:2"
+                   "ATGGACGA->ATGGACGA:0"
+                   "CTGCGCTG->ATGGACGA:5"
+                   "ATGGACGA->CTGCGCTG:5"
+                   "ATGGACGA->ATGGACGA:0"
+                   "ATGGACGA->ATAGACAA:2"
+                   "ATAGCCAC->CAAATCCC:5"
+                   "ATAGCCAC->ATTGCGAC:2"
+                   "ATAGCCAC->ATAGACAA:2"
+                   "CAAATCCC->ATAGCCAC:5"])))))
+  (testing "small parsimony with an unrooted tree"
+    (let [tree (root-tree (parse-graph ["TCGGCCAA->4"
+                                        "4->TCGGCCAA"
+                                        "CCTGGCTG->4"
+                                        "4->CCTGGCTG"
+                                        "CACAGGAT->5"
+                                        "5->CACAGGAT"
+                                        "TGAGTACC->5"
+                                        "5->TGAGTACC"
+                                        "4->5"
+                                        "5->4"]))
+          mapping (small-parsimony-mapping tree)]
+      (is (= (total-cost tree mapping) 17)))))

@@ -298,3 +298,42 @@
    (let [leaves (tree-leaves tree)
          parts (map (partial partial-sp tree alphabet leaves) (range (count (first leaves))))]
      (combine-tree-slices parts (keys tree)))))
+
+(defn total-cost
+  "Finds the total cost of a small parsimony mapping for a given tree"
+  [tree mapping]
+  (apply + (for [[node children] tree]
+             (apply + (for [child (keys children)]
+                        (hamming-dist (mapping node) (if (string? child) child (mapping child))))))))
+
+(defn graph-edges-with-mapping
+  "Retuns string versions of the graph (with edges made bidirectional) with a given mapping from a unidirectional tree"
+  [tree mapping]
+  (mapcat (fn [[node children]]
+            (apply concat
+                   (for [child (keys children)]
+                     (let [child-string (if (string? child) child (mapping child))
+                           node-string (mapping node)
+                           dist (hamming-dist node-string child-string)]
+                        [(str node-string "->" child-string ":" dist)
+                         (str child-string "->" node-string ":" dist)]))))
+          tree))
+
+(defn root-tree
+  "Creates a rooted unidirectional tree from an unrooted bidrectional graph"
+  ([tree] (root-tree tree (first (filter integer? (keys tree)))))
+  ([tree root]
+   (let [children (keys (tree root))]
+     (if (empty? children) {} ; hit the leaf
+       (let [cleansed (reduce (fn [t child]
+                                (assoc t child (dissoc (t child) root)))
+                              tree children)]
+         (apply merge {root (zipmap children (map (tree root) children))} (map (partial root-tree cleansed) children))))))) 
+
+(defn run-small-parsimony!
+  [input-file rooted?]
+  (let [input (read-file input-file)
+        raw-tree (parse-graph (rest input))
+        tree (if rooted? raw-tree (root-tree raw-tree))
+        mapping (small-parsimony-mapping tree)]
+    (concat [(total-cost tree mapping)] (graph-edges-with-mapping tree mapping))))
