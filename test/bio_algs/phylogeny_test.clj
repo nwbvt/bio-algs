@@ -132,3 +132,36 @@
                                         "5->4"]))
           mapping (small-parsimony-mapping tree)]
       (is (= (total-cost tree mapping) 17)))))
+
+(deftest large-parsimony-problem
+  (testing "Finding nearest neighbors"
+    (is (= (nearest-neighbors 5 4 (parse-graph ["0->4"
+                                                "4->0"
+                                                "1->4"
+                                                "4->1"
+                                                "2->5"
+                                                "5->2"
+                                                "3->5"
+                                                "5->3"
+                                                "4->5"
+                                                "5->4"]))
+           [(parse-graph ["1->5"
+                          "0->4"
+                          "3->5"
+                          "2->4"
+                          "4->2"
+                          "5->4"
+                          "4->0"
+                          "5->1"
+                          "4->5"
+                          "5->3"])
+            (parse-graph ["1->4"
+                          "0->5"
+                          "3->5"
+                          "2->4"
+                          "4->2"
+                          "5->4"
+                          "4->1"
+                          "5->0"
+                          "4->5"
+                          "5->3"])]))))

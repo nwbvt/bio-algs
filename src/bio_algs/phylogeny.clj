@@ -118,7 +118,8 @@
 (defn format-graph
   "Formats the graph"
   [graph]
-  (mapcat (fn [node] (map (fn [[k v]] (format "%d->%d:%f" node k v)) (graph node))) (sort (keys graph))))
+  (mapcat (fn [node] (map (fn [[k v]] (if (nil? v) (format "%s->%s" node k)
+                                        (format "%s->%s:%f" node k v))) (graph node))) (keys graph)))
 
 (def cluster-dist
   "Find the distance between two clusters given a distance matrix"
@@ -337,3 +338,25 @@
         tree (if rooted? raw-tree (root-tree raw-tree))
         mapping (small-parsimony-mapping tree)]
     (concat [(total-cost tree mapping)] (graph-edges-with-mapping tree mapping))))
+
+(defn nearest-neighbors
+  [node1 node2 tree]
+  (let [node1-children (keys (tree node1))
+        node2-children (keys (tree node2))]
+    (assert (= 3 (count node1-children) (count node2-children)))
+    (assert (.contains node1-children node2))
+    (assert (.contains node2-children node1))
+    (let [[w x] (remove #(= node2 %) node1-children)
+          [y z] (remove #(= node1 %) node2-children)
+          [w-children x-children y-children z-children] (map tree [w x y z])
+          swap (fn [children in out] (assoc (dissoc children out) in nil))]
+      [(assoc tree node1 {node2 nil w nil y nil} node2 {node1 nil x nil z nil} y (swap y-children node1 node2) x (swap x-children node2 node1))
+       (assoc tree node1 {node2 nil w nil z nil} node2 {node1 nil x nil y nil} z (swap z-children node1 node2) x (swap x-children node2 node1))])))
+
+(defn run-nearest-neighbors!
+  [input-file]
+  (let [input (read-file input-file)
+        [node1 node2] (map #(Integer/parseInt %) (split (first input) #" "))
+        tree (parse-graph (rest input))
+        [tree1 tree2] (nearest-neighbors node1 node2 tree)]
+    (write-result (concat (format-graph tree1) [""] (format-graph tree2)))))
