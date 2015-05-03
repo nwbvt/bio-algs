@@ -1,19 +1,19 @@
 (ns bio-algs.phylogeny
   (:require [clojure.string :refer [split]]
-            [clojure.set :refer [intersection]]
+            [clojure.set :refer [intersection difference]]
             [bio-algs.core :refer [read-file to-ints write-result]]
-            ))
+            [bio-algs.ori-rep :refer [hamming-dist]]))
 
 (defn- parse-text-edge
   "convert the textual format of an edge to an array"
   [text-edge]
   (let [[nodes weight] (split text-edge #":")
-        [in-node out-node] (map #(Integer/parseInt %) (split nodes #"->"))]
-    [in-node out-node (Double/parseDouble weight)]))
+        [in-node out-node] (map #(try (Integer/parseInt %) (catch NumberFormatException e %)) (split nodes #"->"))]
+    [in-node out-node (if (nil? weight) nil (Double/parseDouble weight))]))
 
 (defn parse-graph
   "Parses a graph from the textual format to a map of nodes to an array of connected nodes and the weights of each"
-  [text-edges]
+  [text-edges & opts]
   (let [edges (map parse-text-edge text-edges)
         edge-map (group-by first edges)
         nodes (keys edge-map)]
@@ -233,3 +233,68 @@
   (let [d (to-ints (rest (read-file infile)))
         result (nj-tree d)]
     (write-result (format-graph result))))
+
+(defn tree-leaves
+  "Returns the leaves of a tree"
+  [tree]
+  (let [in-nodes (set (keys tree))
+        out-nodes (set (mapcat keys (vals tree)))]
+    (difference out-nodes in-nodes)))
+
+(defn next-ripe
+  "Find the next ripe node"
+  [tree tags]
+  (let [ripe-nodes (filter (fn [node] (and (not (:tag (tags node)))
+                                           (every? #(:tag (tags %)) (keys (tree node)))))
+                           (keys tree))]
+   (first ripe-nodes)))
+
+(defn- cost-for-k
+  [tags k child]
+  (let [c-vals (get-in tags [child :c-vals])]
+    (apply min (map #(+ (if (= % k) 0 1) (c-vals %))
+                    (keys c-vals)))))
+
+(defn- next-cost-map
+  [tags children alphabet]
+  (zipmap alphabet (map (fn [k] (apply + (map (partial cost-for-k tags k) children))) alphabet)))
+
+(defn- backtrack-tags
+  [tree tags node & [parent]]
+  (let [c-vals (get-in tags [node :c-vals])
+        alphabet (keys c-vals)
+        unchanged-cost (c-vals parent)
+        min-choice (apply min-key c-vals alphabet)
+        min-cost (c-vals min-choice)
+        choice (if (or (nil? unchanged-cost) (<= 1 (- unchanged-cost min-cost)))
+                 min-choice
+                 parent)]
+    (if (nil? (tree node)) {node choice}
+      (let [children (keys (tree node))
+            child-choices (apply merge (map #(backtrack-tags tree tags % choice) children))]
+        (assoc child-choices node choice)))))
+
+(defn partial-sp
+  "partial method for running small parsimoney with single character leaves
+  the utilized character will be the ith character in each leaf
+  This will return a mapping from each node to a seq consisting of its string and the distance to it"
+  [tree alphabet leaves i]
+  (loop [tags (merge
+                (zipmap (keys tree) (repeat {:tag false}))
+                (zipmap leaves (for [leaf leaves] {:tag true :c-vals {(nth leaf i) 1}})))
+         last-node nil]
+    (let [ripe (next-ripe tree tags)]
+      (if (nil? ripe) (backtrack-tags tree tags last-node)
+        (recur (assoc tags ripe {:tag true :c-vals (next-cost-map tags (keys (tree ripe)) alphabet)}) ripe)))))
+
+(defn- combine-tree-slices
+  [slices nodes]
+  (zipmap nodes (map (fn [node] (apply str (map #(% node) slices))) nodes)))
+
+(defn small-parsimony-mapping
+  "Runs the small parsimony algorithm to find ancestor sequences"
+  ([tree] (small-parsimony tree #{\A \T \C \G}))
+  ([tree alphabet]
+   (let [leaves (tree-leaves tree)
+         parts (map (partial partial-sp tree alphabet leaves) (range (count (first leaves))))]
+     (combine-tree-slices parts (keys tree)))))

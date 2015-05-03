@@ -94,3 +94,28 @@
                          "5->1:13.500"
                          "5->2:16.500"
                          "5->4:2.000"])))))
+
+(deftest small-parsimony-problem
+  (testing "Implementation of the small parsimony algorithm"
+    (let [tree (parse-graph ["4->CAAATCCC"
+                             "4->ATTGCGAC"
+                             "5->CTGCGCTG"
+                             "5->ATGGACGA"
+                             "6->4"
+                             "6->5"])
+          mapping (small-parsimony-mapping tree)]
+     (is (= mapping {4 "ATAGCCAC" 5 "ATGGACGA" 6 "ATAGACAA"}))
+     #_(is (= (total-cost graph mapping) 16))
+     #_(is (= 
+           [16 (parse-graph ["ATTGCGAC->ATAGCCAC:2"
+                             "ATAGACAA->ATAGCCAC:2"
+                             "ATAGACAA->ATGGACTA:2"
+                             "ATGGACGA->ATGGACTA:1"
+                             "CTGCGCTG->ATGGACTA:4"
+                             "ATGGACTA->CTGCGCTG:4"
+                             "ATGGACTA->ATGGACGA:1"
+                             "ATGGACTA->ATAGACAA:2"
+                             "ATAGCCAC->CAAATCCC:5"
+                             "ATAGCCAC->ATTGCGAC:2"
+                             "ATAGCCAC->ATAGACAA:2"
+                             "CAAATCCC->ATAGCCAC:5"])])))))
