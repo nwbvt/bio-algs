@@ -360,3 +360,37 @@
         tree (parse-graph (rest input))
         [tree1 tree2] (nearest-neighbors node1 node2 tree)]
     (write-result (concat (format-graph tree1) [""] (format-graph tree2)))))
+
+(defn neighbor-pairs
+  "lists all the neighbor pairs that do not include leaves in a rooted tree"
+  [tree]
+  (let [internal-nodes (keys tree)]
+    (for [node1 internal-nodes node2 (keys (tree node1)) :when (.contains internal-nodes node2)]
+      [node1 node2])))
+
+(defn large-parsimony
+  "Use the nearest neighbors heuristic to solve the large parismony problem given an unrooted graph
+   This will return a seq of each iteration"
+  [graph]
+  (loop [current graph
+         rooted (root-tree graph)
+         cur-mapping (small-parsimony-mapping rooted)
+         cur-score (total-cost rooted cur-mapping)
+         prior []]
+    (let [neighbors (vec (mapcat (fn [[node1 node2]]
+                                   (nearest-neighbors node1 node2 current))
+                                 (neighbor-pairs rooted)))
+          n (count neighbors)
+          rooted-neighbors (vec (map root-tree neighbors))
+          mappings (vec (map small-parsimony-mapping rooted-neighbors))
+          costs (vec (map #(total-cost (nth rooted-neighbors %) (nth mappings %)) (range n)))
+          best-index (apply min-key costs (range n))
+          state {:cost cur-score :mapping cur-mapping :graph current}]
+      (if (<= cur-score (costs best-index)) (conj prior state)
+        (recur (neighbors best-index) (rooted-neighbors best-index) (mappings best-index) (costs best-index) (conj prior state))))))
+
+(defn run-large-parsimony
+  [input-file]
+  (let [input (rest (read-file input-file))
+        results (large-parsimony (parse-graph input))]
+    (mapcat #(concat [(:cost %)] (graph-edges-with-mapping (root-tree (:graph %)) (:mapping %)) [""]) results)))

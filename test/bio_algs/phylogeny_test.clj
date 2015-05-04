@@ -164,4 +164,18 @@
                           "4->1"
                           "5->0"
                           "4->5"
-                          "5->3"])]))))
+                          "5->3"])])))
+  (testing "large parsimony problem using nearest neighbor heuristic iteration"
+    (let [graph (parse-graph ["CGAAGATTCTAA->4"
+                              "ATGCCGGGCTCG->4"
+                              "CTTTTAGAAGCG->5"
+                              "AACTCATGATAT->5"
+                              "5->AACTCATGATAT"
+                              "5->CTTTTAGAAGCG"
+                              "5->4"
+                              "4->ATGCCGGGCTCG"
+                              "4->CGAAGATTCTAA"
+                              "4->5"])
+          results (large-parsimony graph)]
+      (is (= 2 (count results)))
+      (is (= [22 21] (map :cost results) (map #(total-cost (root-tree (:graph %)) (:mapping %)) results))))))
