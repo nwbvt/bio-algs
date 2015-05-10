@@ -294,7 +294,7 @@
 
 (defn small-parsimony-mapping
   "Runs the small parsimony algorithm to find ancestor sequences"
-  ([tree] (small-parsimony tree #{\A \T \C \G}))
+  ([tree] (small-parsimony-mapping tree #{\A \T \C \G}))
   ([tree alphabet]
    (let [leaves (tree-leaves tree)
          parts (map (partial partial-sp tree alphabet leaves) (range (count (first leaves))))]
