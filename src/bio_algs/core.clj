@@ -24,7 +24,17 @@
   [filename]
   (read-strands (slurp filename)))
 
+(defn convert-lines
+  "Change the results of a file read to a list of integers"
+  [lines f]
+  (vec (map (fn [line] (vec (map f (split line #"[ \t]")))) lines)))
+
 (defn to-ints
   "Change the results of a file read to a list of integers"
   [lines]
-  (vec (map (fn [line] (vec (map #(Integer/parseInt %) (split line #"[ \t]")))) lines)))
+  (convert-lines lines #(Integer/parseInt %)))
+
+(defn to-floats
+  "Change the results of a file read to a list of floating point numbers"
+  [lines]
+  (convert-lines lines #(Double/parseDouble %)))
