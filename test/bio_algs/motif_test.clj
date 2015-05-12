@@ -104,7 +104,7 @@
                                         "GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG"
                                         "TAGTACCGAGACCGAAAGAAGTATACAGGCGT"
                                         "TAGATCAAGTTTCAGGTGCACGTCGGTGAACC"
-                                        "AATCCACCAGCTCCACGTGCAATGTTGGCCTA"] 20))))))
+                                        "AATCCACCAGCTCCACGTGCAATGTTGGCCTA"] 100))))))
 (deftest entropies
   (testing "calculating entropies"
     (is (= 0.0 (entropy "AAAAAAAA")))
