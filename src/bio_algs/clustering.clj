@@ -99,3 +99,20 @@
   (let [[[k m] & data] (to-floats (read-file input-file))
         centers (k-means (int k) (int m) data)]
     (map (partial join " ") centers)))
+
+(defn calc-responsibilities
+ [m beta centers]
+ (fn [point]
+   (let [ds (map #(d m [%] point) centers)
+         numerators (map #(expt Math/E (* (- beta) %)) ds)
+         total (apply + numerators)]
+     (map #(/ % total) numerators))))
+
+(defn e-m-cluster
+  [k m beta data n]
+  (loop [centers (take k data) remaining n]
+    (if (zero? n) centers
+      (let [soft-clusters (map (calc-responsibilities m beta centers) data)])
+      )
+    )
+  )
