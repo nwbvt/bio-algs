@@ -108,11 +108,15 @@
          total (apply + numerators)]
      (map #(/ % total) numerators))))
 
+(defn find-center
+  [data m responsibilities]
+  (let [total (apply + responsibilities)]
+    (for [i (range m)] (/ (apply + (map #(* (nth responsibilities %) (nth (nth data %) i)) (range (count data)))) total))))
+
 (defn e-m-cluster
   [k m beta data n]
   (loop [centers (take k data) remaining n]
-    (if (zero? n) centers
-      (let [soft-clusters (map (calc-responsibilities m beta centers) data)])
-      )
-    )
-  )
+    (if (zero? remaining) centers
+      (let [soft-clusters (map (calc-responsibilities m beta centers) data)
+            new-centers (for [i (range k)] (find-center data m (map #(nth % i) soft-clusters)))]
+        (recur new-centers (dec remaining))))))
