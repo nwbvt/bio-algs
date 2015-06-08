@@ -47,7 +47,21 @@
 (defn p-hmm-outcome
   "Uses the viterbi algorithm to find the probability of an outcome given a hmm"
   [outcome states trans-matrix emission-matrix]
-  nil)
+  (loop [current-state nil
+         emissions (seq outcome)
+         probability 1]
+    (if (empty? emissions) probability
+      (let [new-probabilities (zipmap states (map (fn [new-state]
+                                                    (if (nil? current-state)
+                                                      (* (/ 1 (count states))
+                                                                         ((emission-matrix new-state) (first emissions)))
+                                                      (apply + (map (fn [pre]
+                                                                      (* (current-state pre)
+                                                                         ((trans-matrix pre) new-state)
+                                                                         ((emission-matrix new-state) (first emissions))))
+                                                                    states))))
+                                                  states))]
+        (recur new-probabilities (rest emissions) (apply + (vals new-probabilities)))))))
 
 (defn make-matrix
   [matrix-strings]
@@ -68,6 +82,5 @@
         matrix-lines (drop 8 in)
         end-trans (+ 7 (count states))
         trans-matrix (make-matrix (subvec in 6 end-trans))
-        emission-matrix (make-matrix (drop (inc end-trans) in))
-        ]
-    (viterbi outcome states trans-matrix emission-matrix)))
+        emission-matrix (make-matrix (drop (inc end-trans) in))]
+    (p-hmm-outcome outcome states trans-matrix emission-matrix)))
