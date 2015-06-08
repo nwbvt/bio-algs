@@ -39,6 +39,16 @@
           (apply str ((current best) :path)))
         (recur (next-states (first emissions) current) (rest emissions))))))
 
+(defn optimal-path
+  "Uses the viterbi algorithm to find the optimal path"
+  [outcome states trans-matrix emission-matrix]
+  (viterbi outcome states trans-matrix emission-matrix))
+
+(defn p-hmm-outcome
+  "Uses the viterbi algorithm to find the probability of an outcome given a hmm"
+  [outcome states trans-matrix emission-matrix]
+  nil)
+
 (defn make-matrix
   [matrix-strings]
   (let [states (map first (split (trim (first matrix-strings)) #"[ \t]"))]

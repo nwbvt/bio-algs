@@ -16,6 +16,10 @@
     (is (> 1e-15 (- (p-outcome "zzzyxyyzzx" "BAAAAAAAAA" {\A {\x 0.176 \y 0.596 \z 0.228} \B {\x 0.225 \y 0.572 \z 0.203}})
                     3.59748954746e-06))))
   (testing "finding the optimal hidden path using the viterbi algorithm"
-    (is (= (viterbi "xyxzzxyxyy" [\A \B] {\A {\A 0.641 \B 0.359} \B {\A 0.729 \B 0.271}}
-                    {\A {\x 0.117 \y 0.691 \z 0.192} \B {\x 0.097 \y 0.42 \z 0.483}})
-           "AAABBAAAAA"))))
+    (is (= (optimal-path "xyxzzxyxyy" [\A \B] {\A {\A 0.641 \B 0.359} \B {\A 0.729 \B 0.271}}
+                         {\A {\x 0.117 \y 0.691 \z 0.192} \B {\x 0.097 \y 0.42 \z 0.483}})
+           "AAABBAAAAA")))
+  (testing "find the probability of a given state emitting na particular string"
+    (is (> 1e-15 (- (p-hmm-outcome "xzyyzzyzyy" [\A \B] {\A {\A 0.303 \B 0.697} \B {\A 0.831 \B 0.169}}
+                                   {\A {\x 0.533 \y 0.065 \z 0.402} \B {\x 0.342 \y 0.334 \z 0.324}})
+                    1.1005510319694847e-06)))))
