@@ -23,3 +23,17 @@
     (is (> 1e-15 (- (p-hmm-outcome "xzyyzzyzyy" [\A \B] {\A {\A 0.303 \B 0.697} \B {\A 0.831 \B 0.169}}
                                    {\A {\x 0.533 \y 0.065 \z 0.402} \B {\x 0.342 \y 0.334 \z 0.324}})
                     1.1005510319694847e-06)))))
+
+(deftest solving-profile-hmm
+  (testing "Solving the profile hmm problem"
+    (let [profile (profile-hmm 0.289 ["EBA"
+                                      "E-D"
+                                      "EB-"
+                                      "EED"
+                                      "EBD"
+                                      "EBE"
+                                      "E-D"
+                                      "E-D"])]
+      (is (= (profile :transition) {:S {:M1 1.0} :M1 {:I1 0.625 :M2 0.375} :I1 {:M2 0.8 :D2 0.2} :M2 {:E 1.0} :D2 {:E 1.0}}))
+      (is (= (profile :emission) {:M1 {\E 1.0} :I1 {\B 0.8 \E 0.2} :M2 {\A (double 1/7) \D (double 5/7) \E (double 1/7)}}))
+      (is (= (profile :max-state) 2)))))
