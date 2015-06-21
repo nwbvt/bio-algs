@@ -38,3 +38,20 @@
   "Change the results of a file read to a list of floating point numbers"
   [lines]
   (convert-lines lines #(Double/parseDouble %)))
+
+(defn- parse-text-edge
+  "convert the textual format of an edge to an array"
+  [text-edge]
+  (let [[nodes weight] (split text-edge #":")
+        [in-node out-node] (map #(try (Integer/parseInt %) (catch NumberFormatException e %)) (split nodes #"->"))]
+    [in-node out-node (if (nil? weight) nil (Double/parseDouble weight))]))
+
+(defn parse-graph
+  "Parses a graph from the textual format to a map of nodes to an array of connected nodes and the weights of each"
+  [text-edges & opts]
+  (let [edges (map parse-text-edge text-edges)
+        edge-map (group-by first edges)
+        nodes (keys edge-map)]
+    (zipmap nodes
+            (for [node nodes :let [edge-list (edge-map node)]]
+              (zipmap (map second edge-list) (map #(nth % 2) edge-list))))))

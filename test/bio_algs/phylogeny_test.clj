@@ -1,6 +1,7 @@
 (ns bio-algs.phylogeny-test
   (:require [clojure.test :refer :all]
-            [bio-algs.phylogeny :refer :all]))
+            [bio-algs.phylogeny :refer :all]
+            [bio-algs.core :refer [parse-graph]]))
 
 (deftest weights
   (testing "parsing the graph"
