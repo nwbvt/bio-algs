@@ -17,4 +17,13 @@
                           "301->429:Q"
                           "332->429:P"
                           "415->486:A"
-                          "429->486:G"] :edge-parser identity)))))
+                          "429->486:G"] :edge-parser identity))))
+  (testing "Generating a spectrum from a peptide"
+    (is (= (sort (gen-spectrum "ANFPG")) [0 57 71 154 185 301 332 415 429 486])))
+  (testing "the explains function works"
+    (is (true? (explains-spectrum? [57 71 154 185 301 332 415 429 486] "GPFNA")))
+    (is (false? (explains-spectrum? [57 71 154 185 301 332 415 429] "GPFNA")))
+    (is (false? (explains-spectrum? [57 71 154 185 301 332 415 429 486 512] "GPFNA"))))
+  (testing "Using the graph to decode the spectrum"
+    (is (= (decode-spec-graph [57 71 154 185 301 332 415 429 486])
+           "ANFPG"))))

@@ -30,6 +30,40 @@
   (let [sorted (sort (for [[start out] graph [end aa] out] [start end aa]))]
     (map (fn [[start end aa]] (str start "->" end ":" aa)) sorted)))
 
+(defn all-paths
+  "Finds all paths in the (acyclic) graph from one node to the other"
+  [graph source sink]
+  (defn- r-func
+    [node]
+    (if (= node sink) [""]
+      (flatten
+        (for [[next-node edge] (graph node)
+              :let [tails (r-func next-node)]]
+          (map #(str edge %) tails)))))
+  (r-func source))
+
+(defn weigh
+  "weighs a given peptide"
+  [peptide]
+  (reduce + (map #(-> % str amino-acid-weights) peptide)))
+
+(defn gen-spectrum
+  [peptide]
+  (let [n (count peptide)]
+    (apply concat
+           (for [i (range n)] (map weigh (split-at i peptide))))))
+
+(defn explains-spectrum?
+  [spectrum peptide]
+  (= (sort (conj spectrum 0)) (sort (gen-spectrum peptide))))
+
+(defn decode-spec-graph
+  "Decodes the spectrum using the spectrum graph"
+  [spectrum]
+  (let [graph (spec-graph spectrum)
+        paths (all-paths graph 0 (apply max spectrum))]
+    (first (filter (partial explains-spectrum? spectrum) paths))))
+
 (defn run
   [input]
   (let [in (read-file input)
