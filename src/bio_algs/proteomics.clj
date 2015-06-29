@@ -64,6 +64,19 @@
         paths (all-paths graph 0 (apply max spectrum))]
     (first (filter (partial explains-spectrum? spectrum) paths))))
 
+(defn peptide-vector
+  "Generates a peptide vector"
+  [peptide]
+  (apply concat (for [aa peptide :let [w (amino-acid-weights (str aa))]]
+                  (reverse (cons 1 (repeat (dec w) 0))))))
+
+(defn from-pv
+  "Generates the/a peptide that could generate the given peptide vector"
+  [pv]
+  (let [partitioned (partition 2 (partition-by identity pv))]
+    (apply str (for [p partitioned] 
+                 (weights-to-aa (inc (count (first p))))))))
+
 (defn run
   [input]
   (let [in (read-file input)

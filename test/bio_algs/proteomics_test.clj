@@ -3,7 +3,7 @@
             [bio-algs.proteomics :refer :all]
             [bio-algs.core :refer [parse-graph]]))
 
-(deftest spectrums
+(deftest ideal-spectrums
   (testing "Find the graph for a spectrum"
     (is (= (spec-graph [57 71 154 185 301 332 415 429 486])
            (parse-graph [ "0->57:G"
@@ -27,3 +27,13 @@
   (testing "Using the graph to decode the spectrum"
     (is (= (decode-spec-graph [57 71 154 185 301 332 415 429 486])
            "ANFPG"))))
+
+(deftest noisy-spectrums
+  (testing "Converting a peptide to a peptide vector and back again"
+    (let [peptide "TFPRGPHSPRVVDIRCCQQMNDHQSIDWQYSIYFM"   
+          v (peptide-vector peptide)]
+      (is (= (count v) 4234))
+      (is (= (reduce + v) 35))
+      (is (= (subvec (vec v) 80 120)
+             [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]))
+      (is (= (from-pv v) peptide)))))
