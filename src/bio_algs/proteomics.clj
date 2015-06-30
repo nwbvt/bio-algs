@@ -66,16 +66,39 @@
 
 (defn peptide-vector
   "Generates a peptide vector"
-  [peptide]
-  (apply concat (for [aa peptide :let [w (amino-acid-weights (str aa))]]
-                  (reverse (cons 1 (repeat (dec w) 0))))))
+  ([peptide] (peptide-vector peptide amino-acid-weights))
+  ([peptide aa-ws]
+  (apply concat (for [aa peptide :let [w (aa-ws (str aa))]]
+                  (reverse (cons 1 (repeat (dec w) 0)))))))
 
 (defn from-pv
   "Generates the/a peptide that could generate the given peptide vector"
-  [pv]
+  ([pv] (from-pv pv weights-to-aa))
+  ([pv ws-to-aa]
   (let [partitioned (partition 2 (partition-by identity pv))]
     (apply str (for [p partitioned] 
-                 (weights-to-aa (inc (count (first p))))))))
+                 (ws-to-aa (inc (count (first p)))))))))
+
+(defn dot-prod
+  [v1 v2]
+  (apply + (for [i (range (min (count v1) (count v2)))] (* (nth v1 i) (nth v2 i)))))
+
+(defn score-peptide
+  [peptide spectrum aa-ws]
+  (let [n (count spectrum)
+        pv (take n (peptide-vector peptide))
+        match (apply str (take (apply + pv) peptide))]
+    [(dot-prod spectrum pv) match]))
+
+(defn best-peptide
+  "Finds the best peptide matching a spectrum from a given protenome"
+  ([spectrum proteome] (best-peptide spectrum proteome amino-acid-weights weights-to-aa))
+  ([spectrum proteome aa-ws] (best-peptide spectrum proteome aa-ws (map-invert aa-ws)))
+  ([spectrum proteome aa-ws ws-to-aa]
+   (let [options (take-while not-empty (iterate rest proteome))
+         scores (map #(score-peptide % spectrum aa-ws) options)
+         best (apply max-key first scores)]
+     (second best))))
 
 (defn run
   [input]
