@@ -68,8 +68,10 @@
   "Generates a peptide vector"
   ([peptide] (peptide-vector peptide amino-acid-weights))
   ([peptide aa-ws]
-  (apply concat (for [aa peptide :let [w (aa-ws (str aa))]]
-                  (reverse (cons 1 (repeat (dec w) 0)))))))
+   (assert peptide)
+   (assert aa-ws)
+   (apply concat (for [aa peptide :let [w (aa-ws (str aa))]]
+                           (conj (vec (repeat (dec w) 0)) 1)))))
 
 (defn from-pv
   "Generates the/a peptide that could generate the given peptide vector"
@@ -86,9 +88,9 @@
 (defn score-peptide
   [peptide spectrum aa-ws]
   (let [n (count spectrum)
-        pv (take n (peptide-vector peptide))
+        pv (take n (peptide-vector peptide aa-ws))
         match (apply str (take (apply + pv) peptide))]
-    [(dot-prod spectrum pv) match]))
+    [(dot-prod (vec spectrum) (vec pv)) match]))
 
 (defn best-peptide
   "Finds the best peptide matching a spectrum from a given protenome"
@@ -104,5 +106,5 @@
   [input]
   (let [in (read-file input)
         spectrum (map #(Integer/parseInt %) (split (first in) #"[ \t]"))
-        graph (spec-graph spectrum)]
-    (draw-graph graph)))
+        proteome (second in)]
+    (best-peptide spectrum proteome)))

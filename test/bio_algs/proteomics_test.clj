@@ -39,5 +39,5 @@
       (is (= (from-pv v) peptide))))
   (testing "Finding the best peptide for a given spectrum from a given proteome"
     (is (= (best-peptide [0 0 0 4 -2 -3 -1 -7 6 5 3 2 1 9 3 -8 0 3 1 2 1 8]
-                         "XZZXZXXXZXZZXZXXZ" {"Z" 4 "X" 5})
+                         "XZZXZXXXZXZZXZXXZ" {"X" 4 "Z" 5})
            "ZXZXX"))))
