@@ -38,6 +38,12 @@
              [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]))
       (is (= (from-pv v) peptide))))
   (testing "Finding the best peptide for a given spectrum from a given proteome"
-    (is (= (best-peptide [0 0 0 4 -2 -3 -1 -7 6 5 3 2 1 9 3 -8 0 3 1 2 1 8]
-                         "XZZXZXXXZXZZXZXXZ" {"X" 4 "Z" 5})
-           "ZXZXX"))))
+    (is (= (second (best-peptide [0 0 0 4 -2 -3 -1 -7 6 5 3 2 1 9 3 -8 0 3 1 2 1 8]
+                                 "XZZXZXXXZXZZXZXXZ" {"X" 4 "Z" 5}))
+           "ZXZXX")))
+  (testing "the peptide search problem"
+    (is (= (peptide-search [[-1 5 -4 5 3 -1 -4 5 -1 0 0 4 -1 0 1 4 4 4]
+                            [-4 2 -2 -4 4 -5 -1 4 -1 2 5 -3 -1 3 2 -3]]
+                           "XXXZXZXXZXZXXXZXXZX" 5
+                           {"X" 4 "Z" 5})
+           ["XZXZ"]))))

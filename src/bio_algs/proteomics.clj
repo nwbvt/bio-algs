@@ -99,11 +99,21 @@
    (let [options (take-while not-empty (iterate rest proteome))
          scores (map #(score-peptide % spectrum aa-ws) options)
          best (apply max-key first scores)]
-     (second best))))
+     best)))
+
+(defn peptide-search
+  "Searches for peptides that match the given spectrums above a certain threshold"
+  ([spectrums proteome threshold] (peptide-search spectrums proteome threshold amino-acid-weights))
+  ([spectrums proteome threshold weight-map]
+   (for [spectrum spectrums :let [res (best-peptide spectrum proteome weight-map)] :when (>= (first res) threshold)]
+     (second res))))
 
 (defn run
   [input]
   (let [in (read-file input)
-        spectrum (map #(Integer/parseInt %) (split (first in) #"[ \t]"))
-        proteome (second in)]
-    (best-peptide spectrum proteome)))
+        n (count in)
+        spectrums (map (fn [spec] (map #(Integer/parseInt %) (split spec #"[ \t]"))) (take (- n 2) in))
+        proteome (nth in (- n 2))
+        threshold (Integer/parseInt (last in))]
+    (peptide-search spectrums proteome threshold)
+    ))
