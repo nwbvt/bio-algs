@@ -90,13 +90,12 @@
   (let [n (count spectrum)
         pv (take n (peptide-vector peptide aa-ws))
         match (apply str (take (apply + pv) peptide))]
-    [(dot-prod (vec spectrum) (vec pv)) match]))
+    [(if (and (= n (count pv)) (= 1 (last pv))) (dot-prod (vec spectrum) (vec pv)) Integer/MIN_VALUE) match]))
 
 (defn best-peptide
   "Finds the best peptide matching a spectrum from a given protenome"
-  ([spectrum proteome] (best-peptide spectrum proteome amino-acid-weights weights-to-aa))
-  ([spectrum proteome aa-ws] (best-peptide spectrum proteome aa-ws (map-invert aa-ws)))
-  ([spectrum proteome aa-ws ws-to-aa]
+  ([spectrum proteome] (best-peptide spectrum proteome amino-acid-weights))
+  ([spectrum proteome aa-ws]
    (let [options (take-while not-empty (iterate rest proteome))
          scores (map #(score-peptide % spectrum aa-ws) options)
          best (apply max-key first scores)]
