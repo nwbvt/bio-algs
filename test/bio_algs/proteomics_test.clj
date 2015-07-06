@@ -46,4 +46,8 @@
                             [-4 2 -2 -4 4 -5 -1 4 -1 2 5 -3 -1 3 2 -3]]
                            "XXXZXZXXZXZXXXZXXZX" 5
                            {"X" 4 "Z" 5})
-           ["XZXZ"]))))
+           ["XZXZ"])))
+  (testing "Size of spectral dictionary"
+    (is (= (spec-dict-size [4 -3 -2 3 3 -4 5 -3 -1 -1 3 4 1 3] 1 8 {"X" 4 "Z" 5}) 3)))
+  (testing "Probability of spectral dictionary"
+    (is (= (spec-dict-prob [4 -3 -2 3 3 -4 5 -3 -1 -1 3 4 1 3] 1 8 {"X" 4 "Z" 5}) 0.375))))

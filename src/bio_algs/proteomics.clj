@@ -108,12 +108,35 @@
    (for [spectrum spectrums :let [res (best-peptide spectrum proteome weight-map)] :when (>= (first res) threshold)]
      (second res))))
 
+(defn spec-dict-size
+  "Finds the size of the spectral dictionary"
+  ([spectrum threshold max-size] (spec-dict-size spectrum threshold max-size amino-acid-weights))
+  ([spectrum threshold max-size weight-map]
+   (if (empty? spectrum) 0
+     (let [n (count spectrum)]
+       (apply + (for [aa (keys weight-map) :let [weight (weight-map aa) s (nth spectrum (dec weight) nil)]]
+                  (cond
+                    (= weight n) (if (and (>= s threshold) (<= s max-size)) 1 0)
+                    (< weight n) (spec-dict-size (drop weight spectrum) (- threshold s) (- max-size s) weight-map)
+                    (> weight n) 0)))))))
+
+(defn spec-dict-prob
+  "Finds the probability of the spectral dictionary"
+  ([spectrum threshold max-size] (spec-dict-prob spectrum threshold max-size amino-acid-weights 0))
+  ([spectrum threshold max-size weight-map] (spec-dict-prob spectrum threshold max-size weight-map 0))
+  ([spectrum threshold max-size weight-map len]
+   (if (empty? spectrum) 0
+     (let [n (count spectrum)]
+       (apply + (for [aa (keys weight-map) :let [weight (weight-map aa) s (nth spectrum (dec weight) nil)]]
+                  (cond
+                    (= weight n) (if (and (>= s threshold) (<= s max-size)) (/ 1 (Math/pow (count weight-map) (inc len))) 0)
+                    (< weight n) (spec-dict-prob (drop weight spectrum) (- threshold s) (- max-size s) weight-map (inc len))
+                    (> weight n) 0)))))))
+
 (defn run
   [input]
   (let [in (read-file input)
-        n (count in)
-        spectrums (map (fn [spec] (map #(Integer/parseInt %) (split spec #"[ \t]"))) (take (- n 2) in))
-        proteome (nth in (- n 2))
-        threshold (Integer/parseInt (last in))]
-    (peptide-search spectrums proteome threshold)
-    ))
+        spectrum (map #(Integer/parseInt %) (split (first in) #"[ \t]"))
+        threshold (Integer/parseInt (second in))
+        max-size (Integer/parseInt (nth in 2))]
+    (spec-dict-prob spectrum threshold max-size)))
